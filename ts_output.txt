@@ -1,0 +1,2 @@
+Modules/Core/resources/js/lib/module-components.ts(16,48): error TS2339: Property 'statuses' does not exist on type '{}'.
+Modules/Core/resources/js/lib/module-components.ts(29,48): error TS2339: Property 'statuses' does not exist on type '{}'.

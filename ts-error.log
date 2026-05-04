@@ -1,0 +1,25 @@
+Modules/Admin/resources/js/components/user/UpdatePasswordDialog.vue(28,24): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(name: undefined, params: undefined, absolute?: boolean | undefined, config?: Config | undefined): Router', gave the following error.
+    Argument of type '"admin.users.password"' is not assignable to parameter of type 'undefined'.
+  Overload 2 of 4, '(name: "admin.users.password", params?: RouteParams<"admin.users.password"> | undefined, absolute?: boolean | undefined, config?: Config | undefined): string', gave the following error.
+    Argument of type 'number | null' is not assignable to parameter of type 'RouteParams<"admin.users.password"> | undefined'.
+      Type 'null' is not assignable to type 'RouteParams<"admin.users.password"> | undefined'.
+  Overload 3 of 4, '(name: "admin.users.password", params?: ParameterValue | undefined, absolute?: boolean | undefined, config?: Config | undefined): string', gave the following error.
+    Argument of type 'number | null' is not assignable to parameter of type 'ParameterValue | undefined'.
+      Type 'null' is not assignable to type 'ParameterValue | undefined'.
+Modules/Admin/resources/js/components/user/UpdatePasswordDialog.vue(28,24): error TS2345: Argument of type 'Router' is not assignable to parameter of type 'string | URL | UrlMethodPair'.
+Modules/Admin/resources/js/components/user/UpdateProfileDialog.vue(35,24): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(name: undefined, params: undefined, absolute?: boolean | undefined, config?: Config | undefined): Router', gave the following error.
+    Argument of type '"admin.users.profile"' is not assignable to parameter of type 'undefined'.
+  Overload 2 of 4, '(name: "admin.users.profile", params?: RouteParams<"admin.users.profile"> | undefined, absolute?: boolean | undefined, config?: Config | undefined): string', gave the following error.
+    Argument of type 'number | null' is not assignable to parameter of type 'RouteParams<"admin.users.profile"> | undefined'.
+      Type 'null' is not assignable to type 'RouteParams<"admin.users.profile"> | undefined'.
+  Overload 3 of 4, '(name: "admin.users.profile", params?: ParameterValue | undefined, absolute?: boolean | undefined, config?: Config | undefined): string', gave the following error.
+    Argument of type 'number | null' is not assignable to parameter of type 'ParameterValue | undefined'.
+      Type 'null' is not assignable to type 'ParameterValue | undefined'.
+Modules/Admin/resources/js/components/user/UpdateProfileDialog.vue(35,24): error TS2345: Argument of type 'Router' is not assignable to parameter of type 'string | URL | UrlMethodPair'.
+Modules/Core/resources/js/components/UpdateQuickMenuDialog.vue(19,27): error TS2571: Object is of type 'unknown'.
+Modules/Core/resources/js/components/UpdateQuickMenuDialog.vue(38,28): error TS2571: Object is of type 'unknown'.
+Modules/Core/resources/js/components/UpdateQuickMenuDialog.vue(98,71): error TS7006: Parameter 'checked' implicitly has an 'any' type.
+Modules/Core/resources/js/components/UpdateQuickMenuDialog.vue(116,71): error TS7006: Parameter 'checked' implicitly has an 'any' type.
+Modules/Core/resources/js/pages/QuickMenuPage.vue(37,13): error TS2571: Object is of type 'unknown'.

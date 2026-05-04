@@ -1,0 +1,32 @@
+{
+    "module": {
+        "key": "admin",
+        "name": "Admin",
+        "title": "Admin",
+        "anchor": "admin",
+        "description": "Pengelolaan akun pengguna dan hak akses sistem.",
+        "iconImage": "img/logo/logo.png",
+        "roles": ["Superadmin"],
+        "order": 1
+    },
+    "pages": [
+        {
+            "key": "users",
+            "title": "Kelola User",
+            "level": 2,
+            "href": "/app/admin/users",
+            "componentKey": "admin.users",
+            "description": "Lihat, edit, dan kelola akun pengguna.",
+            "iconImage": "img/logo/logo.png"
+        },
+        {
+            "key": "roles",
+            "title": "Kelola Role",
+            "level": 2,
+            "href": "/app/admin/roles",
+            "componentKey": "admin.roles",
+            "description": "Manajemen role dan hak akses pengguna.",
+            "iconImage": "img/logo/logo.png"
+        }
+    ]
+}

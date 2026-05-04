@@ -1,0 +1,4 @@
+Modules/Admin/resources/js/components/UpdateRoleDialog.vue(79,82): error TS2345: Argument of type 'AcceptableValue' is not assignable to parameter of type 'Updater<string[]>'.
+  Type 'null' is not assignable to type 'Updater<string[]>'.
+Modules/Core/resources/js/lib/module-components.ts(16,48): error TS2339: Property 'statuses' does not exist on type '{}'.
+Modules/Core/resources/js/lib/module-components.ts(29,48): error TS2339: Property 'statuses' does not exist on type '{}'.
