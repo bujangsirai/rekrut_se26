@@ -62,7 +62,7 @@ document.addEventListener('click', (event) => {
         return;
     }
 
-    const anchor = event.target.closest<HTMLAnchorElement>('a[href="/logout"]');
+    const anchor = event.target.closest<HTMLAnchorElement>('a[href="/admin/logout"]');
 
     if (!anchor || event.defaultPrevented) {
         return;

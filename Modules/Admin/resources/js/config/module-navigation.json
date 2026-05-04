@@ -14,7 +14,7 @@
             "key": "users",
             "title": "Kelola User",
             "level": 2,
-            "href": "/app/admin/users",
+            "href": "/admin/users",
             "componentKey": "admin.users",
             "description": "Lihat, edit, dan kelola akun pengguna.",
             "iconImage": "img/logo/logo.png"
@@ -23,7 +23,7 @@
             "key": "roles",
             "title": "Kelola Role",
             "level": 2,
-            "href": "/app/admin/roles",
+            "href": "/admin/roles",
             "componentKey": "admin.roles",
             "description": "Manajemen role dan hak akses pengguna.",
             "iconImage": "img/logo/logo.png"

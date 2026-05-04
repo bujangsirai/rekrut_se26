@@ -133,7 +133,7 @@ function togglePasswordVisibility(): void {
                 </div>
 
                 <Button as-child class="h-8 w-full rounded-lg text-[13px]" type="button" variant="secondary">
-                    <a href="/login_sso">Login with SSO BPS</a>
+                    <a href="/login">Login Pengguna Organik</a>
                 </Button>
             </div>
         </form>

@@ -6,11 +6,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { media } from '@/lib/media';
 import { Link, usePage } from '@inertiajs/vue3';
-import { Bell, ChevronDown, CircleUserRound, Eye, House, KeyRound, LayoutGrid, LogOut, Pencil } from 'lucide-vue-next';
+import { Bell, ChevronDown, CircleUserRound, Eye, House, LayoutGrid, LogOut } from 'lucide-vue-next';
 import type { Component } from 'vue';
 import { computed, ref } from 'vue';
-import UpdateMyEmailDialog from './UpdateMyEmailDialog.vue';
-import UpdateMyPasswordDialog from './UpdateMyPasswordDialog.vue';
 
 interface SharedNavItem {
     key: string;
@@ -42,8 +40,6 @@ const userFotoUrl = computed(() => {
 const authRoles = computed(() => (page.props.auth as any)?.roles ?? []);
 
 const rolesOpen = ref(false);
-const passwordModalOpen = ref(false);
-const emailModalOpen = ref(false);
 const profileModalOpen = ref(false);
 
 const fixedNavItems: SharedNavItem[] = [
@@ -140,7 +136,7 @@ function isNavItemActive(path: string, item: SharedNavItem): boolean {
 
                     <!-- Kanan: Logout (sama di semua ukuran) -->
                     <Button as-child variant="default" class="cursor-pointer rounded-xl border-border px-3">
-                        <Link href="/logout" class="inline-flex items-center gap-2">
+                        <Link href="/admin/logout" class="inline-flex items-center gap-2">
                             <LogOut class="h-4 w-4" />
                             <span class="text-sm">Logout</span>
                         </Link>
@@ -242,14 +238,6 @@ function isNavItemActive(path: string, item: SharedNavItem): boolean {
                                             <p class="-mt-2 text-center text-base leading-tight font-bold text-foreground">
                                                 {{ authUser?.nama ?? '-' }}
                                             </p>
-                                            <a
-                                                href="#"
-                                                @click.prevent="passwordModalOpen = true"
-                                                class="mt-1 flex cursor-pointer items-center gap-1 text-[11px] font-medium text-primary hover:underline"
-                                            >
-                                                <KeyRound class="h-3 w-3" />
-                                                Ubah Password
-                                            </a>
                                         </div>
 
                                         <!-- Detail fields -->
@@ -267,17 +255,7 @@ function isNavItemActive(path: string, item: SharedNavItem): boolean {
                                                 <p class="text-sm font-medium text-foreground">{{ authUser?.email_bps ?? '-' }}</p>
                                             </div>
                                             <div class="space-y-0.5">
-                                                <p
-                                                    class="flex items-center gap-1 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase"
-                                                >
-                                                    Gmail (<button
-                                                        @click.prevent="emailModalOpen = true"
-                                                        class="flex cursor-pointer items-center gap-0.5 font-medium text-primary hover:underline"
-                                                    >
-                                                        <Pencil class="h-2.5 w-2.5" />
-                                                        Ganti Gmail</button
-                                                    >)
-                                                </p>
+                                                <p class="text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">Gmail</p>
                                                 <p class="text-sm font-medium text-foreground">{{ authUser?.email_gmail ?? '-' }}</p>
                                             </div>
 
@@ -366,7 +344,5 @@ function isNavItemActive(path: string, item: SharedNavItem): boolean {
         </nav>
 
         <div class="h-24 lg:hidden" />
-        <UpdateMyPasswordDialog v-model:open="passwordModalOpen" />
-        <UpdateMyEmailDialog v-model:open="emailModalOpen" :current-email="authUser?.email_gmail ?? null" />
     </div>
 </template>

@@ -4,14 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\PasswordLoginRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
-class PasswordLoginController extends Controller
+class AuthController extends Controller
 {
     /**
-     * Handle an incoming username and password login request.
-     *
      * @throws ValidationException
      */
     public function store(PasswordLoginRequest $request): RedirectResponse
@@ -26,6 +25,15 @@ class PasswordLoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('home'));
+        return redirect()->intended(route('admin.dashboard'));
+    }
+
+    public function logout(Request $request): RedirectResponse
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('home');
     }
 }

@@ -1,11 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\Admin\Http\Controllers\UserController;
 use Modules\Admin\Http\Controllers\RoleController;
+use Modules\Admin\Http\Controllers\UserController;
 
 Route::middleware(['auth', 'verified', 'role:Superadmin'])->group(function () {
-    Route::prefix('app/admin')->name('admin.')->group(function () {
+    Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/users', [UserController::class, 'index'])->name('users');
         Route::put('/users/{user}/password', [UserController::class, 'updatePassword'])->name('users.password');
         Route::put('/users/{user}/profile', [UserController::class, 'updateProfile'])->name('users.profile');

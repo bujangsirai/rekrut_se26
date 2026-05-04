@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 defineOptions({
@@ -11,9 +12,21 @@ const nik = ref('');
 <template>
     <div class="min-h-screen bg-linear-to-b from-cyan-50 via-slate-100 to-slate-200 px-3 py-4 sm:px-6 sm:py-6 lg:py-8">
         <div class="mx-auto max-w-6xl space-y-5">
+            <header class="rounded-xl border border-cyan-200 bg-white/90 px-4 py-3 shadow-sm backdrop-blur-sm sm:px-6">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <h1 class="text-lg font-bold tracking-tight text-cyan-800 sm:text-xl">Rekruitmen Mitra BPS Kabupaten Sumbawa Barat</h1>
+                    <Link
+                        href="/login"
+                        class="inline-flex items-center justify-center rounded-lg border border-cyan-700 px-4 py-2 text-sm font-semibold text-cyan-800 transition hover:bg-cyan-700 hover:text-white sm:text-base"
+                    >
+                        Login Pengguna Organik
+                    </Link>
+                </div>
+            </header>
+
             <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                 <header class="bg-linear-to-r from-cyan-700 to-cyan-600 px-4 py-3 sm:px-6 sm:py-4">
-                    <h1 class="text-base font-bold tracking-wide text-white sm:text-lg lg:text-xl">PENGOLAHAN SENSUS PERTANIAN 2023 (ST2023)</h1>
+                    <h2 class="text-base font-bold tracking-wide text-white sm:text-lg lg:text-xl">PENGOLAHAN SENSUS PERTANIAN 2023 (ST2023)</h2>
                 </header>
 
                 <div class="space-y-5 p-4 text-sm leading-relaxed text-slate-800 sm:p-6 sm:text-base">
