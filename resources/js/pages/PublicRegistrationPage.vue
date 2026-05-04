@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { Check, ChevronsUpDown } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { TanStackCombobox, TanStackInput, TanStackSelect, TanStackTextarea } from '@/components/ui/form';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { useForm } from '@tanstack/vue-form';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 defineOptions({
     // @ts-ignore
@@ -24,69 +22,111 @@ const props = defineProps<{
 }>();
 
 const firstKecamatanCode = props.kecamatanOptions[0]?.kode_kec ?? '';
+const firstDesaCode = props.desaOptions.find((item) => item.kode_desa.slice(0, 7) === firstKecamatanCode)?.kode_desa ?? '';
+
+const kecamatanSelectOptions = computed(() =>
+    props.kecamatanOptions.map((item) => ({
+        label: item.nama_kec,
+        value: item.kode_kec,
+    })),
+);
 
 const form = useForm({
-    nama_lengkap: '',
-    email: '',
-    jenis_kelamin: 'Laki-laki',
-    kode_kec: firstKecamatanCode,
-    kode_desa: '',
-    alamat_lengkap: '',
-    tanggal_lahir: '',
-    tempat_lahir: '',
-    status_perkawinan: 'Belum Kawin',
-    pendidikan_terakhir: 'SLTP/Kebawah',
-    pekerjaan: '',
-    nomor_whatsapp: '',
-    riwayat_kegiatan_bps: '',
-    ktp_file: null as File | null,
+    defaultValues: {
+        nama_lengkap: '',
+        email: '',
+        jenis_kelamin: 'Laki-laki',
+        kode_kec: firstKecamatanCode,
+        kode_desa: firstDesaCode,
+        alamat_lengkap: '',
+        tanggal_lahir: '',
+        tempat_lahir: '',
+        status_perkawinan: 'Belum Kawin',
+        pendidikan_terakhir: 'SLTP/Kebawah',
+        pekerjaan: '',
+        nomor_whatsapp: '',
+        riwayat_kegiatan_bps: '',
+        ktp_file: null as File | null,
+    },
+    onSubmit: async ({ value }) =>
+        new Promise<void>((resolve) => {
+            const payload = new FormData();
+            payload.append('nama_lengkap', value.nama_lengkap);
+            payload.append('email', value.email);
+            payload.append('jenis_kelamin', value.jenis_kelamin);
+            payload.append('kode_kec', value.kode_kec);
+            payload.append('kode_desa', value.kode_desa);
+            payload.append('alamat_lengkap', value.alamat_lengkap);
+            payload.append('tanggal_lahir', value.tanggal_lahir);
+            payload.append('tempat_lahir', value.tempat_lahir);
+            payload.append('status_perkawinan', value.status_perkawinan);
+            payload.append('pendidikan_terakhir', value.pendidikan_terakhir);
+            payload.append('pekerjaan', value.pekerjaan);
+            payload.append('nomor_whatsapp', value.nomor_whatsapp);
+            payload.append('riwayat_kegiatan_bps', value.riwayat_kegiatan_bps ?? '');
+
+            if (value.ktp_file) {
+                payload.append('ktp_file', value.ktp_file);
+            }
+
+            router.post('/daftar', payload, {
+                forceFormData: true,
+                preserveScroll: true,
+                onFinish: () => resolve(),
+            });
+        }),
 });
 
-const kecamatanOpen = ref(false);
-const desaOpen = ref(false);
+const values = form.useStore((state) => state.values);
+const isSubmitting = form.useStore((state) => state.isSubmitting);
+const temporaryKtpPreviewUrl = ref('');
 
-function submit(): void {
-    form.post('/daftar', {
-        preserveScroll: true,
-        forceFormData: true,
-    });
-}
-
-function handleKtpFileChange(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    form.ktp_file = target.files?.[0] ?? null;
-}
-
-const filteredDesaOptions = computed(() => {
-    if (!form.kode_kec) {
+const desaSelectOptions = computed(() => {
+    if (!values.value.kode_kec) {
         return [];
     }
 
-    return props.desaOptions.filter((item) => item.kode_desa.slice(0, 7) === form.kode_kec);
-});
-
-const selectedKecamatanLabel = computed(() => {
-    return props.kecamatanOptions.find((item) => item.kode_kec === form.kode_kec)?.nama_kec ?? '';
-});
-
-const selectedDesaLabel = computed(() => {
-    return filteredDesaOptions.value.find((item) => item.kode_desa === form.kode_desa)?.nama_desa ?? '';
+    return props.desaOptions
+        .filter((item) => item.kode_desa.slice(0, 7) === values.value.kode_kec)
+        .map((item) => ({
+            label: item.nama_desa,
+            value: item.kode_desa,
+        }));
 });
 
 watch(
-    () => form.kode_kec,
-    (kodeKecamatan) => {
-        if (!kodeKecamatan) {
-            form.kode_desa = '';
+    () => values.value.kode_kec,
+    (kodeKec) => {
+        if (!kodeKec) {
+            form.setFieldValue('kode_desa', '');
 
             return;
         }
 
-        const firstDesa = props.desaOptions.find((item) => item.kode_desa.slice(0, 7) === kodeKecamatan);
-        form.kode_desa = firstDesa?.kode_desa ?? '';
+        const firstDesa = props.desaOptions.find((item) => item.kode_desa.slice(0, 7) === kodeKec)?.kode_desa ?? '';
+        form.setFieldValue('kode_desa', firstDesa);
     },
-    { immediate: true },
 );
+
+watch(
+    () => values.value.ktp_file,
+    (file) => {
+        if (temporaryKtpPreviewUrl.value) {
+            URL.revokeObjectURL(temporaryKtpPreviewUrl.value);
+            temporaryKtpPreviewUrl.value = '';
+        }
+
+        if (file instanceof File) {
+            temporaryKtpPreviewUrl.value = URL.createObjectURL(file);
+        }
+    },
+);
+
+onBeforeUnmount(() => {
+    if (temporaryKtpPreviewUrl.value) {
+        URL.revokeObjectURL(temporaryKtpPreviewUrl.value);
+    }
+});
 </script>
 
 <template>
@@ -101,194 +141,64 @@ watch(
                 </div>
             </header>
 
-            <form class="space-y-4 sm:space-y-5" @submit.prevent="submit">
+            <form class="space-y-4 sm:space-y-5" @submit.prevent="form.handleSubmit">
                 <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                     <header class="bg-linear-to-r from-cyan-700 to-cyan-600 px-4 py-3">
                         <h2 class="text-base font-bold text-white sm:text-lg">I. INFORMASI UMUM</h2>
                     </header>
 
-                    <div class="p-4 sm:p-6">
-                    <div class="grid gap-4 md:grid-cols-[260px_minmax(0,1fr)] md:items-center">
-                        <label class="text-sm font-semibold text-slate-900">1. Nama Lengkap*</label>
-                        <div>
-                            <input v-model="form.nama_lengkap" type="text" class="h-10 w-full rounded-md border border-slate-300 px-3 text-sm" />
-                            <p v-if="form.errors.nama_lengkap" class="mt-1 text-xs text-red-600">{{ form.errors.nama_lengkap }}</p>
-                        </div>
+                    <div class="grid gap-4 p-4 sm:p-6 md:grid-cols-2">
+                        <TanStackInput :form="form" name="nama_lengkap" label="Nama Lengkap*" />
+                        <TanStackInput :form="form" name="nomor_whatsapp" label="Nomor WhatsApp*" />
 
-                        <label class="text-sm font-semibold text-slate-900">2. Alamat Email*</label>
-                        <div>
-                            <input v-model="form.email" type="email" class="h-10 w-full rounded-md border border-slate-300 px-3 text-sm" />
-                            <p v-if="form.errors.email" class="mt-1 text-xs text-red-600">{{ form.errors.email }}</p>
-                        </div>
+                        <TanStackCombobox
+                            :form="form"
+                            name="kode_kec"
+                            label="Asal Kecamatan*"
+                            :options="kecamatanSelectOptions"
+                            placeholder="Cari kecamatan..."
+                        />
+                        <TanStackCombobox :form="form" name="kode_desa" label="Asal Desa*" :options="desaSelectOptions" placeholder="Cari desa..." />
+                        <TanStackInput :form="form" name="tempat_lahir" label="Tempat Lahir*" />
+                        <TanStackInput :form="form" name="tanggal_lahir" type="date" label="Tanggal Lahir*" />
+                        <TanStackSelect
+                            :form="form"
+                            name="jenis_kelamin"
+                            label="Jenis Kelamin*"
+                            :options="[
+                                { label: 'Laki-laki', value: 'Laki-laki' },
+                                { label: 'Perempuan', value: 'Perempuan' },
+                            ]"
+                        />
+                        <TanStackSelect
+                            :form="form"
+                            name="status_perkawinan"
+                            label="Status Perkawinan*"
+                            :options="[
+                                { label: 'Belum Kawin', value: 'Belum Kawin' },
+                                { label: 'Kawin', value: 'Kawin' },
+                                { label: 'Cerai Hidup', value: 'Cerai Hidup' },
+                                { label: 'Cerai Mati', value: 'Cerai Mati' },
+                            ]"
+                        />
+                        <TanStackSelect
+                            :form="form"
+                            name="pendidikan_terakhir"
+                            label="Pendidikan Terakhir*"
+                            :options="[
+                                { label: 'SLTP/Kebawah', value: 'SLTP/Kebawah' },
+                                { label: 'SLTA', value: 'SLTA' },
+                                { label: 'DI/DII/DII', value: 'DI/DII/DII' },
+                                { label: 'DIV/S1/S2/S3', value: 'DIV/S1/S2/S3' },
+                            ]"
+                        />
+                        <TanStackInput :form="form" name="pekerjaan" label="Pekerjaan*" />
+                        <TanStackInput :form="form" name="email" type="email" label="Alamat Email*" />
+                        <TanStackInput :form="form" name="alamat_lengkap" label="Alamat Lengkap*" />
 
-                        <label class="text-sm font-semibold text-slate-900">3. Jenis Kelamin*</label>
-                        <div>
-                            <select v-model="form.jenis_kelamin" class="h-10 w-full rounded-md border border-slate-300 px-3 text-sm">
-                                <option value="Laki-laki">Laki-laki</option>
-                                <option value="Perempuan">Perempuan</option>
-                            </select>
-                            <p v-if="form.errors.jenis_kelamin" class="mt-1 text-xs text-red-600">{{ form.errors.jenis_kelamin }}</p>
+                        <div class="md:col-span-2">
+                            <TanStackTextarea :form="form" name="riwayat_kegiatan_bps" label="Riwayat Kegiatan BPS" :rows="3" />
                         </div>
-
-                        <label class="text-sm font-semibold text-slate-900">4. Asal Kecamatan*</label>
-                        <div>
-                            <Popover v-model:open="kecamatanOpen">
-                                <PopoverTrigger as-child>
-                                    <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        :aria-expanded="kecamatanOpen"
-                                        class="h-10 w-full justify-between font-normal"
-                                    >
-                                        <span class="truncate text-left">
-                                            {{ selectedKecamatanLabel || 'Cari kecamatan...' }}
-                                        </span>
-                                        <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent class="w-(--reka-popper-anchor-width) p-0">
-                                    <Command>
-                                        <CommandInput placeholder="Cari kecamatan..." class="h-9" />
-                                        <CommandEmpty>Kecamatan tidak ditemukan.</CommandEmpty>
-                                        <CommandList class="group/list max-h-56">
-                                            <CommandGroup class="p-1">
-                                                <CommandItem
-                                                    v-for="item in kecamatanOptions"
-                                                    :key="item.kode_kec"
-                                                    :value="`${item.kode_kec} ${item.nama_kec}`"
-                                                    class="cursor-pointer rounded-md transition-colors hover:!bg-primary/10 hover:!text-primary data-[highlighted]:bg-primary/10 data-[highlighted]:text-primary group-hover/list:data-[highlighted]:bg-transparent group-hover/list:data-[highlighted]:text-foreground"
-                                                    @select="
-                                                        () => {
-                                                            form.kode_kec = item.kode_kec;
-                                                            kecamatanOpen = false;
-                                                        }
-                                                    "
-                                                >
-                                                    <span>{{ item.nama_kec }}</span>
-                                                    <Check
-                                                        class="ml-auto h-4 w-4"
-                                                        :class="form.kode_kec === item.kode_kec ? 'opacity-100' : 'opacity-0'"
-                                                    />
-                                                </CommandItem>
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
-                            <p v-if="form.errors.kode_kec" class="mt-1 text-xs text-red-600">{{ form.errors.kode_kec }}</p>
-                        </div>
-
-                        <label class="text-sm font-semibold text-slate-900">5. Asal Desa*</label>
-                        <div>
-                            <Popover v-model:open="desaOpen">
-                                <PopoverTrigger as-child>
-                                    <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        :aria-expanded="desaOpen"
-                                        class="h-10 w-full justify-between font-normal"
-                                        :disabled="!form.kode_kec"
-                                    >
-                                        <span class="truncate text-left">
-                                            {{ selectedDesaLabel || 'Cari desa...' }}
-                                        </span>
-                                        <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent class="w-(--reka-popper-anchor-width) p-0">
-                                    <Command>
-                                        <CommandInput placeholder="Cari desa..." class="h-9" />
-                                        <CommandEmpty>Desa tidak ditemukan.</CommandEmpty>
-                                        <CommandList class="group/list max-h-56">
-                                            <CommandGroup class="p-1">
-                                                <CommandItem
-                                                    v-for="item in filteredDesaOptions"
-                                                    :key="item.kode_desa"
-                                                    :value="`${item.kode_desa} ${item.nama_desa}`"
-                                                    class="cursor-pointer rounded-md transition-colors hover:!bg-primary/10 hover:!text-primary data-[highlighted]:bg-primary/10 data-[highlighted]:text-primary group-hover/list:data-[highlighted]:bg-transparent group-hover/list:data-[highlighted]:text-foreground"
-                                                    @select="
-                                                        () => {
-                                                            form.kode_desa = item.kode_desa;
-                                                            desaOpen = false;
-                                                        }
-                                                    "
-                                                >
-                                                    <span>{{ item.nama_desa }}</span>
-                                                    <Check
-                                                        class="ml-auto h-4 w-4"
-                                                        :class="form.kode_desa === item.kode_desa ? 'opacity-100' : 'opacity-0'"
-                                                    />
-                                                </CommandItem>
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
-                            <p v-if="form.errors.kode_desa" class="mt-1 text-xs text-red-600">{{ form.errors.kode_desa }}</p>
-                        </div>
-
-                        <label class="text-sm font-semibold text-slate-900">6. Alamat Lengkap*</label>
-                        <div>
-                            <textarea v-model="form.alamat_lengkap" rows="3" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
-                            <p v-if="form.errors.alamat_lengkap" class="mt-1 text-xs text-red-600">{{ form.errors.alamat_lengkap }}</p>
-                        </div>
-
-                        <label class="text-sm font-semibold text-slate-900">7. Tanggal Lahir*</label>
-                        <div>
-                            <input v-model="form.tanggal_lahir" type="date" class="h-10 w-full rounded-md border border-slate-300 px-3 text-sm" />
-                            <p v-if="form.errors.tanggal_lahir" class="mt-1 text-xs text-red-600">{{ form.errors.tanggal_lahir }}</p>
-                        </div>
-
-                        <label class="text-sm font-semibold text-slate-900">8. Tempat Lahir*</label>
-                        <div>
-                            <input v-model="form.tempat_lahir" type="text" class="h-10 w-full rounded-md border border-slate-300 px-3 text-sm" />
-                            <p v-if="form.errors.tempat_lahir" class="mt-1 text-xs text-red-600">{{ form.errors.tempat_lahir }}</p>
-                        </div>
-
-                        <label class="text-sm font-semibold text-slate-900">9. Status Perkawinan*</label>
-                        <div>
-                            <select v-model="form.status_perkawinan" class="h-10 w-full rounded-md border border-slate-300 px-3 text-sm">
-                                <option value="Belum Kawin">Belum Kawin</option>
-                                <option value="Kawin">Kawin</option>
-                                <option value="Cerai Hidup">Cerai Hidup</option>
-                                <option value="Cerai Mati">Cerai Mati</option>
-                            </select>
-                            <p v-if="form.errors.status_perkawinan" class="mt-1 text-xs text-red-600">{{ form.errors.status_perkawinan }}</p>
-                        </div>
-
-                        <label class="text-sm font-semibold text-slate-900">10. Pendidikan Terakhir*</label>
-                        <div>
-                            <select v-model="form.pendidikan_terakhir" class="h-10 w-full rounded-md border border-slate-300 px-3 text-sm">
-                                <option value="SLTP/Kebawah">SLTP/Kebawah</option>
-                                <option value="SLTA">SLTA</option>
-                                <option value="DI/DII/DII">DI/DII/DII</option>
-                                <option value="DIV/S1/S2/S3">DIV/S1/S2/S3</option>
-                            </select>
-                            <p v-if="form.errors.pendidikan_terakhir" class="mt-1 text-xs text-red-600">{{ form.errors.pendidikan_terakhir }}</p>
-                        </div>
-
-                        <label class="text-sm font-semibold text-slate-900">11. Pekerjaan*</label>
-                        <div>
-                            <input v-model="form.pekerjaan" type="text" class="h-10 w-full rounded-md border border-slate-300 px-3 text-sm" />
-                            <p v-if="form.errors.pekerjaan" class="mt-1 text-xs text-red-600">{{ form.errors.pekerjaan }}</p>
-                        </div>
-
-                        <label class="text-sm font-semibold text-slate-900">12. Nomor WhatsApp*</label>
-                        <div>
-                            <input v-model="form.nomor_whatsapp" type="text" class="h-10 w-full rounded-md border border-slate-300 px-3 text-sm" />
-                            <p v-if="form.errors.nomor_whatsapp" class="mt-1 text-xs text-red-600">{{ form.errors.nomor_whatsapp }}</p>
-                        </div>
-
-                        <label class="text-sm font-semibold text-slate-900">13. Riwayat Kegiatan BPS</label>
-                        <div>
-                            <textarea
-                                v-model="form.riwayat_kegiatan_bps"
-                                rows="3"
-                                class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                            />
-                            <p v-if="form.errors.riwayat_kegiatan_bps" class="mt-1 text-xs text-red-600">{{ form.errors.riwayat_kegiatan_bps }}</p>
-                        </div>
-                    </div>
                     </div>
                 </section>
 
@@ -296,30 +206,44 @@ watch(
                     <header class="bg-linear-to-r from-cyan-700 to-cyan-600 px-4 py-3">
                         <h2 class="text-base font-bold text-white sm:text-lg">II. DOKUMEN UNGGAHAN</h2>
                     </header>
-                    <div class="grid gap-4 p-4 sm:p-6 md:grid-cols-[260px_minmax(0,1fr)] md:items-center">
-                        <label class="text-sm font-semibold text-slate-900">15. Upload KTP*</label>
-                        <div>
-                            <input
-                                type="file"
-                                accept=".pdf,image/png,image/jpeg,image/jpg,image/webp"
-                                class="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-cyan-50 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-cyan-700"
-                                @change="handleKtpFileChange"
-                            />
-                            <p class="mt-1 text-xs text-slate-500">Format: PDF/JPG/JPEG/PNG/WEBP. Maksimal 5MB.</p>
-                            <p v-if="form.errors.ktp_file" class="mt-1 text-xs text-red-600">{{ form.errors.ktp_file }}</p>
+                    <div class="grid gap-4 p-4 sm:p-6 md:grid-cols-2">
+                        <div class="md:col-span-2">
+                            <form.Field name="ktp_file">
+                                <template #default="{ field }">
+                                    <div class="space-y-2">
+                                        <label class="text-sm font-medium">Upload KTP*</label>
+                                        <input
+                                            type="file"
+                                            accept=".pdf,image/png,image/jpeg,image/jpg,image/webp"
+                                            class="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-cyan-50 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-cyan-700"
+                                            @change="(event: Event) => field.handleChange((event.target as HTMLInputElement).files?.[0] ?? null)"
+                                        />
+                                        <p class="text-xs text-slate-500">Format: pdf/jpg/jpeg/png. Maksimal 5MB.</p>
+                                        <a
+                                            v-if="temporaryKtpPreviewUrl"
+                                            :href="temporaryKtpPreviewUrl"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="inline-flex text-xs font-medium text-cyan-700 underline underline-offset-2 hover:text-cyan-800"
+                                        >
+                                            Lihat file KTP yang dipilih
+                                        </a>
+                                    </div>
+                                </template>
+                            </form.Field>
+                            <p v-if="$page.props.errors?.ktp_file" class="mt-1 text-xs text-destructive">{{ $page.props.errors.ktp_file }}</p>
                         </div>
                     </div>
+                    <div class="flex justify-end px-4 pb-4 sm:px-6 sm:pb-6">
+                        <button
+                            type="submit"
+                            :disabled="isSubmitting"
+                            class="cursor-pointer inline-flex h-10 items-center justify-center rounded-lg bg-green-600 px-5 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-60"
+                        >
+                            {{ isSubmitting ? 'Mengirim...' : 'Kirim Pendaftaran' }}
+                        </button>
+                    </div>
                 </section>
-
-                <div class="flex justify-end">
-                    <button
-                        type="submit"
-                        :disabled="form.processing"
-                        class="inline-flex h-10 items-center justify-center rounded-lg bg-green-600 px-5 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-60"
-                    >
-                        {{ form.processing ? 'Mengirim...' : 'Kirim Pendaftaran' }}
-                    </button>
-                </div>
             </form>
         </div>
     </div>

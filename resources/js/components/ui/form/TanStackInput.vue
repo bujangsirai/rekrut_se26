@@ -9,7 +9,7 @@ const props = defineProps<{
     form: any;
     name: string;
     label: string;
-    type?: 'text' | 'password' | 'email';
+    type?: 'text' | 'password' | 'email' | 'date';
     placeholder?: string;
     validators?: any;
     spellcheck?: boolean;

@@ -6,7 +6,6 @@ use App\Http\Requests\PublicRegistrationRequest;
 use App\Models\ApplicantProfile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -46,12 +45,12 @@ class PublicRegistrationController extends Controller
     public function store(PublicRegistrationRequest $request): RedirectResponse
     {
         $validated = $request->validated();
-        $ktpPath = $request->file('ktp_file')->store('mitra/ktp', 'public');
+        $ktpPath = $request->file('ktp_file')->store('mitra/ktp', 'local');
         unset($validated['ktp_file']);
 
         ApplicantProfile::query()->create([
             ...$validated,
-            'url_ktp' => Storage::disk('public')->url($ktpPath),
+            'url_ktp' => $ktpPath,
             'kode_akses' => Str::uuid()->toString(),
             'kode_akses_kedaluwarsa_pada' => now()->addDays(30),
             'status_wawancara' => 'Belum Wawancara',
