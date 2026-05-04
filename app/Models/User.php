@@ -13,24 +13,12 @@ class User extends Authenticatable
     use HasFactory, HasPushSubscriptions, HasRoles, Notifiable;
 
     protected $fillable = [
-        'nip',
-        'nip_baru',
         'username',
-        'nama',
-        'email_bps',
-        'email_gmail',
-        'status_pegawai',
-        'golongan',
-        'jabatan',
-        'url_foto',
         'password',
-        'quick_menu_keys',
     ];
 
     protected $hidden = [
         'password',
-        'created_at',
-        'updated_at',
     ];
 
     /**
@@ -40,7 +28,6 @@ class User extends Authenticatable
     {
         return [
             'password' => 'hashed',
-            'quick_menu_keys' => 'array',
         ];
     }
 }
