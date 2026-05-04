@@ -8,7 +8,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { autoSubscribePushForAuthenticatedUser, cleanupPushSubscriptionBinding } from '@/lib/push-auto-subscribe';
 import { markInstalled, setDeferredInstallPrompt, type BeforeInstallPromptEvent } from '@/lib/pwa-install';
 import { initializeTheme } from '@/lib/theme';
-import SharedModuleLayout from '../../Modules/Shared/resources/js/components/layouts/SharedModuleLayout.vue';
+import LayoutAdmin from '@/components/layouts/LayoutAdmin.vue';
 import '../css/app.css';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
@@ -137,12 +137,12 @@ function applyDefaultModuleLayout(name: string, page: unknown): unknown {
     }
 
     if (Object.isExtensible(component)) {
-        component.layout = SharedModuleLayout;
+        component.layout = LayoutAdmin;
         return page;
     }
 
     const wrappedComponent = Object.create(component) as DefineComponent & { layout?: unknown };
-    wrappedComponent.layout = SharedModuleLayout;
+    wrappedComponent.layout = LayoutAdmin;
     if (pageModule.default) {
         pageModule.default = wrappedComponent;
         return pageModule;
