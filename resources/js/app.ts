@@ -1,6 +1,6 @@
 import { createInertiaApp, router } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import type { Component, DefineComponent } from 'vue';
+import type { DefineComponent } from 'vue';
 import { createApp, Fragment, h } from 'vue';
 import FlashMessageListener from '@/components/common/FlashMessageListener.vue';
 import ScrollToTopButton from '@/components/common/ScrollToTopButton.vue';
@@ -8,7 +8,6 @@ import { Toaster } from '@/components/ui/sonner';
 import { autoSubscribePushForAuthenticatedUser, cleanupPushSubscriptionBinding } from '@/lib/push-auto-subscribe';
 import { markInstalled, setDeferredInstallPrompt, type BeforeInstallPromptEvent } from '@/lib/pwa-install';
 import { initializeTheme } from '@/lib/theme';
-import LayoutAdmin from '@/components/layouts/LayoutAdmin.vue';
 import '../css/app.css';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
@@ -62,7 +61,7 @@ document.addEventListener('click', (event) => {
         return;
     }
 
-    const anchor = event.target.closest<HTMLAnchorElement>('a[href="/admin/logout"]');
+    const anchor = event.target.closest<HTMLAnchorElement>('a[href="/logout"]');
 
     if (!anchor || event.defaultPrevented) {
         return;
@@ -89,64 +88,5 @@ document.addEventListener('click', (event) => {
 
 function resolvePage(name: string) {
     const appPages = import.meta.glob<DefineComponent>('./pages/**/*.vue');
-    const modulePages = import.meta.glob<DefineComponent>('../../Modules/**/resources/js/pages/**/*.vue');
-
-    if (!name.includes('::')) {
-        return resolvePageComponent<DefineComponent>(`./pages/${name}.vue`, appPages);
-    }
-
-    return resolveModulePage(name, modulePages);
-}
-
-function resolveModulePage(name: string, modulePages: Record<string, () => Promise<DefineComponent>>) {
-    const [moduleAlias, pageName] = name.split('::');
-    const moduleAliasLower = moduleAlias.toLowerCase();
-    const pageFile = `${pageName}.vue`;
-
-    const match = Object.keys(modulePages).find((path) => {
-        const normalized = path.replace(/\\/g, '/');
-        const parts = normalized.split('/');
-        const modulesIndex = parts.lastIndexOf('Modules');
-        if (modulesIndex === -1 || modulesIndex + 1 >= parts.length) {
-            return false;
-        }
-
-        const moduleName = parts[modulesIndex + 1];
-
-        return moduleName?.toLowerCase() === moduleAliasLower && normalized.endsWith(`/resources/js/pages/${pageFile}`);
-    });
-
-    if (!match) {
-        throw new Error(`Module page not found: ${name}`);
-    }
-
-    return resolvePageComponent(match, modulePages).then((page) => applyDefaultModuleLayout(name, page));
-}
-
-function applyDefaultModuleLayout(name: string, page: unknown): unknown {
-    const [moduleAlias] = name.split('::');
-    if (!moduleAlias) {
-        return page;
-    }
-
-    const pageModule = page as { default?: Component;[key: string]: unknown };
-    const component = (pageModule.default ?? page) as DefineComponent & { layout?: unknown };
-
-    if ('layout' in component) {
-        return page;
-    }
-
-    if (Object.isExtensible(component)) {
-        component.layout = LayoutAdmin;
-        return page;
-    }
-
-    const wrappedComponent = Object.create(component) as DefineComponent & { layout?: unknown };
-    wrappedComponent.layout = LayoutAdmin;
-    if (pageModule.default) {
-        pageModule.default = wrappedComponent;
-        return pageModule;
-    }
-
-    return wrappedComponent;
+    return resolvePageComponent<DefineComponent>(`./pages/${name}.vue`, appPages);
 }

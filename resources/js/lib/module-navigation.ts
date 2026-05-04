@@ -7,6 +7,7 @@ export interface ModuleNavigationMenuItem {
     key: string;
     title: string;
     href: string;
+    icon?: string;
     description?: string;
     componentKey?: string;
     iconImage?: string;
@@ -16,6 +17,7 @@ export interface ModuleNavigationMenuItem {
 export interface ModuleNavigationPageItem extends ModuleNavigationMenuItem {
     level: number;
     parentKey?: string;
+    section?: string;
     roles?: string[];
 }
 
@@ -32,7 +34,7 @@ export interface ModuleNavigationHubConfig {
 }
 
 export interface ModuleNavigationConfig {
-    module: {
+    module?: {
         key: string;
         name: string;
         title?: string;
@@ -43,6 +45,12 @@ export interface ModuleNavigationConfig {
         roles?: string[];
         order?: number;
     };
+    groups?: {
+        key: string;
+        title: string;
+        roles?: string[];
+        order?: number;
+    }[];
     pages?: ModuleNavigationPageItem[];
 }
 

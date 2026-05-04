@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nama_lengkap');
             $table->string('email');
+            $table->string('url_ktp')->nullable();
             $table->string('kode_akses', 64)->unique();
             $table->timestamp('kode_akses_kedaluwarsa_pada')->nullable();
             $table->timestamp('terakhir_diakses_pada')->nullable();

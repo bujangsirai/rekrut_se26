@@ -1,0 +1,51 @@
+{
+    "groups": [
+        {
+            "key": "wawancara",
+            "title": "Wawancara",
+            "order": 1
+        },
+        {
+            "key": "admin",
+            "title": "Admin",
+            "roles": ["admin"],
+            "order": 2
+        }
+    ],
+    "pages": [
+        {
+            "key": "users",
+            "title": "Kelola User",
+            "level": 2,
+            "section": "admin",
+            "href": "/admin/users",
+            "icon": "users",
+            "roles": ["admin"]
+        },
+        {
+            "key": "roles",
+            "title": "Kelola Role",
+            "level": 2,
+            "section": "admin",
+            "href": "/admin/roles",
+            "icon": "shield-check",
+            "roles": ["admin"]
+        },
+        {
+            "key": "mitra",
+            "title": "Kelola Mitra",
+            "level": 2,
+            "section": "wawancara",
+            "href": "/admin/mitra",
+            "icon": "clipboard-list"
+        },
+        {
+            "key": "bps-home",
+            "title": "Website BPS",
+            "level": 2,
+            "section": "wawancara",
+            "href": "https://www.bps.go.id",
+            "icon": "globe"
+        }
+    ]
+}

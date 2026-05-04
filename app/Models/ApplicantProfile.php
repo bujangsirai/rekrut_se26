@@ -15,6 +15,7 @@ class ApplicantProfile extends Model
         'posisi_dilamar',
         'nama_lengkap',
         'email',
+        'url_ktp',
         'kode_akses',
         'kode_akses_kedaluwarsa_pada',
         'terakhir_diakses_pada',

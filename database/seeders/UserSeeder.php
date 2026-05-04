@@ -11,10 +11,32 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $adminRole = Role::firstOrCreate([
-            'name' => 'admin',
-            'guard_name' => 'web',
-        ]);
+        $roles = [
+            [
+                'name' => 'admin',
+                'description' => 'Akses penuh untuk manajemen data dan pengaturan sistem.',
+            ],
+            [
+                'name' => 'operator',
+                'description' => 'Akses operasional untuk input dan pembaruan data.',
+            ],
+            [
+                'name' => 'viewer',
+                'description' => 'Akses baca saja untuk melihat data dan laporan.',
+            ],
+        ];
+
+        foreach ($roles as $role) {
+            Role::updateOrCreate(
+                [
+                    'name' => $role['name'],
+                    'guard_name' => 'web',
+                ],
+                [
+                    'description' => $role['description'],
+                ]
+            );
+        }
 
         $users = [
             [
