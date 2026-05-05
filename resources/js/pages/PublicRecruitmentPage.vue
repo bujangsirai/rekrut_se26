@@ -1,15 +1,36 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { TanStackInput } from '@/components/ui/form';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { useForm } from '@tanstack/vue-form';
+import { computed, ref, watch } from 'vue';
 
 defineOptions({
     // @ts-ignore
     layout: null,
 });
 
-const nik = ref('');
 const isTermsModalOpen = ref(false);
 const hasScrolledToBottom = ref(false);
 
+const form = useForm({
+    defaultValues: {
+        nik: '',
+    },
+    onSubmit: async ({ value }) => {
+        router.post(
+            '/cek-status',
+            { nik: value.nik },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    // Success handling
+                },
+            },
+        );
+    },
+});
+
+const nikValue = form.useStore((state) => state.values.nik);
 const canContinueRegister = computed(() => hasScrolledToBottom.value);
 
 function openTermsModal(): void {
@@ -29,9 +50,12 @@ function onTermsScroll(event: Event): void {
         hasScrolledToBottom.value = true;
     }
 }
+
+const page = usePage();
 </script>
 
 <template>
+    <Head title="Rekrutmen Mitra SE2026" />
     <div class="min-h-screen bg-linear-to-b from-cyan-50 via-slate-100 to-slate-200 px-2 py-5 sm:px-6 sm:py-10 lg:py-12">
         <div class="mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-6xl items-center sm:min-h-[calc(100vh-5rem)] lg:min-h-[calc(100vh-6rem)]">
             <div class="w-full space-y-4 sm:space-y-6 lg:space-y-8">
@@ -55,7 +79,7 @@ function onTermsScroll(event: Event): void {
                                 @click="openTermsModal"
                                 class="inline-flex min-h-11 w-full cursor-pointer items-center justify-center rounded-xl bg-green-600 px-4 py-2.5 text-center text-[13px] leading-tight font-semibold text-white transition hover:bg-green-700 sm:h-auto sm:w-auto sm:px-5 sm:py-2.5 sm:text-base"
                             >
-                                Daftar Sebagai Petugas Pengolahan SE2026
+                                Daftar Sebagai Petugas SE2026
                             </button>
                         </div>
                     </div>
@@ -67,23 +91,40 @@ function onTermsScroll(event: Event): void {
                     </header>
 
                     <div class="space-y-4 p-4 text-[14px] text-slate-800 sm:space-y-5 sm:p-7 sm:text-base">
-                        <p>Masukkan NIK untuk mengecek apakah Anda sudah terdaftar atau belum :</p>
-
-                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-                            <input
-                                v-model="nik"
-                                type="text"
-                                maxlength="16"
-                                placeholder="Masukkan NIK"
-                                class="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm transition outline-none placeholder:text-slate-400 focus:border-cyan-600 sm:h-11 sm:rounded-lg sm:text-base"
-                            />
+                        <form
+                            class="flex flex-col gap-3 sm:flex-row sm:items-end"
+                            @submit.prevent="
+                                (e) => {
+                                    e.stopPropagation();
+                                    form.handleSubmit();
+                                }
+                            "
+                        >
+                            <div class="flex-1">
+                                <TanStackInput
+                                    :form="form"
+                                    name="nik"
+                                    label="Masukkan NIK untuk mengecek apakah Anda sudah terdaftar atau belum :"
+                                    placeholder="Contoh: 5207xxxxxxxxxxxx"
+                                    :number-only="true"
+                                    :maxlength="16"
+                                    :validators="{
+                                        // @ts-ignore
+                                        onChange: ({ value }) => {
+                                            if (!value) return 'NIK wajib diisi';
+                                            if (value.length !== 16) return 'NIK harus 16 angka';
+                                            return undefined;
+                                        },
+                                    }"
+                                />
+                            </div>
                             <button
-                                type="button"
+                                type="submit"
                                 class="h-11 cursor-pointer rounded-xl bg-green-600 px-5 text-sm font-semibold text-white transition hover:bg-green-700 sm:h-11 sm:shrink-0 sm:rounded-lg sm:text-base"
                             >
                                 Cek Status
                             </button>
-                        </div>
+                        </form>
                     </div>
                 </section>
             </div>
@@ -181,16 +222,17 @@ function onTermsScroll(event: Event): void {
                         >
                             Tutup
                         </button>
-                        <a
+                        <Link
                             href="/daftar"
                             class="inline-flex h-10 items-center justify-center rounded-lg bg-green-600 px-4 text-sm font-semibold text-white transition hover:bg-green-700 disabled:pointer-events-none disabled:opacity-50"
                             :class="{ 'pointer-events-none opacity-50': !canContinueRegister }"
                         >
                             Lanjut Daftar
-                        </a>
+                        </Link>
                     </div>
                 </footer>
             </div>
         </div>
+
     </div>
 </template>

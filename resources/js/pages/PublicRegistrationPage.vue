@@ -33,6 +33,7 @@ const kecamatanSelectOptions = computed(() =>
 
 const form = useForm({
     defaultValues: {
+        nik: '',
         nama_lengkap: '',
         email: '',
         jenis_kelamin: 'Laki-laki',
@@ -51,6 +52,7 @@ const form = useForm({
     onSubmit: async ({ value }) =>
         new Promise<void>((resolve) => {
             const payload = new FormData();
+            payload.append('nik', value.nik);
             payload.append('nama_lengkap', value.nama_lengkap);
             payload.append('email', value.email);
             payload.append('jenis_kelamin', value.jenis_kelamin);
@@ -148,6 +150,7 @@ onBeforeUnmount(() => {
                     </header>
 
                     <div class="grid gap-4 p-4 sm:p-6 md:grid-cols-2">
+                        <TanStackInput :form="form" name="nik" label="NIK (16 Digit)*" :number-only="true" :maxlength="16" />
                         <TanStackInput :form="form" name="nama_lengkap" label="Nama Lengkap*" />
                         <TanStackInput :form="form" name="nomor_whatsapp" label="Nomor WhatsApp*" />
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PublicRegistrationRequest;
 use App\Models\ApplicantProfile;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -60,5 +61,31 @@ class PublicRegistrationController extends Controller
         return redirect()
             ->route('public.register')
             ->with('success', 'Pendaftaran berhasil dikirim. Tim kami akan menghubungi Anda.');
+    }
+
+    public function checkStatus(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'nik' => ['required', 'string', 'digits:16'],
+        ]);
+
+        $mitra = ApplicantProfile::query()->where('nik', $request->nik)->first();
+
+        if (! $mitra) {
+            return redirect()
+                ->back()
+                ->withErrors(['nik' => 'NIK tidak ditemukan dalam sistem kami.']);
+        }
+
+        return redirect()->route('public.status', ['nik' => $request->nik]);
+    }
+
+    public function showStatus(string $nik): Response
+    {
+        $mitra = ApplicantProfile::query()->where('nik', $nik)->firstOrFail();
+
+        return Inertia::render('PublicStatusPage', [
+            'mitra' => $mitra,
+        ]);
     }
 }

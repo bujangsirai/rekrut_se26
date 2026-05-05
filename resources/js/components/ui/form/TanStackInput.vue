@@ -13,6 +13,8 @@ const props = defineProps<{
     placeholder?: string;
     validators?: any;
     spellcheck?: boolean;
+    numberOnly?: boolean;
+    maxlength?: number;
 }>();
 
 const showPassword = ref(false);
@@ -33,8 +35,18 @@ const showPassword = ref(false);
                         :placeholder="placeholder"
                         :model-value="field.state.value"
                         :spellcheck="spellcheck ?? false"
+                        :maxlength="maxlength"
                         @blur="field.handleBlur"
-                        @input="(e: Event) => field.handleChange((e.target as HTMLInputElement).value)"
+                        @input="
+                            (e: Event) => {
+                                let val = (e.target as HTMLInputElement).value;
+                                if (numberOnly) {
+                                    val = val.replace(/\D/g, '');
+                                    (e.target as HTMLInputElement).value = val;
+                                }
+                                field.handleChange(val);
+                            }
+                        "
                     />
                     
                     <button

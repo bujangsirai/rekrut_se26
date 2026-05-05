@@ -24,6 +24,7 @@ class PublicRegistrationRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'nik' => ['required', 'string', 'digits:16', 'unique:mitra,nik'],
             'nama_lengkap' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255'],
             'ktp_file' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'],

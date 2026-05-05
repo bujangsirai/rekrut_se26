@@ -14,8 +14,10 @@ Route::get('/', [PublicLandingController::class, 'index'])
     ->name('home');
 Route::get('/daftar', [PublicRegistrationController::class, 'create'])
     ->name('public.register');
-Route::post('/daftar', [PublicRegistrationController::class, 'store'])
-    ->name('public.register.store');
+Route::post('/cek-status', [PublicRegistrationController::class, 'checkStatus'])
+    ->name('public.check-status');
+Route::get('/status/{nik}', [PublicRegistrationController::class, 'showStatus'])
+    ->name('public.status');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginPageController::class, 'index'])

@@ -12,6 +12,7 @@ class ApplicantProfile extends Model
     protected $table = 'mitra';
 
     protected $fillable = [
+        'nik',
         'posisi_dilamar',
         'nama_lengkap',
         'email',

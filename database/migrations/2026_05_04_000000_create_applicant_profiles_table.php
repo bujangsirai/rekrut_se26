@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('mitra', function (Blueprint $table) {
             $table->id();
+            $table->char('nik', 16)->unique();
             $table->string('nama_lengkap');
             $table->string('email');
             $table->string('url_ktp')->nullable();
