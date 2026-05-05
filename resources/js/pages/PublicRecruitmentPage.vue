@@ -35,56 +35,57 @@ function onTermsScroll(event: Event): void {
     <div class="min-h-screen bg-linear-to-b from-cyan-50 via-slate-100 to-slate-200 px-2 py-5 sm:px-6 sm:py-10 lg:py-12">
         <div class="mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-6xl items-center sm:min-h-[calc(100vh-5rem)] lg:min-h-[calc(100vh-6rem)]">
             <div class="w-full space-y-4 sm:space-y-6 lg:space-y-8">
-            <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <header class="bg-linear-to-r from-cyan-700 to-cyan-600 px-3 py-2.5 sm:px-6 sm:py-4">
-                    <h2 class="text-[15px] leading-snug font-bold tracking-normal text-white sm:text-lg lg:text-xl">
-                        REKRUITMEN MITRA BPS KABUPATEN SUMBAWA BARAT
-                    </h2>
-                </header>
+                <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <header class="bg-linear-to-r from-cyan-700 to-cyan-600 px-3 py-2.5 sm:px-6 sm:py-4">
+                        <h2 class="text-[15px] leading-snug font-bold tracking-normal text-white sm:text-lg lg:text-xl">
+                            REKRUTMEN MITRA BPS KABUPATEN SUMBAWA BARAT
+                        </h2>
+                    </header>
 
-                <div class="space-y-4 p-4 text-[14px] leading-relaxed text-slate-800 sm:space-y-5 sm:p-7 sm:text-base">
-                    <p>
-                        Pendaftaran calon petugas pengolahan SE2026 telah dibuka. Silakan baca syarat dan ketentuan terlebih dahulu sebelum
-                        melanjutkan pendaftaran.
-                    </p>
+                    <div class="space-y-4 p-4 text-[14px] leading-relaxed text-slate-800 sm:space-y-5 sm:p-7 sm:text-base">
+                        <p>
+                            Pendaftaran calon petugas
+                            <b> Sensus Ekonomi 2026 </b>
+                            telah dibuka. Silakan baca syarat dan ketentuan terlebih dahulu sebelum melanjutkan pendaftaran.
+                        </p>
 
-                    <div class="flex justify-start sm:justify-end">
-                        <button
-                            type="button"
-                            @click="openTermsModal"
-                            class="inline-flex min-h-11 w-full cursor-pointer items-center justify-center rounded-xl bg-green-600 px-4 py-2.5 text-center text-[13px] leading-tight font-semibold text-white transition hover:bg-green-700 sm:h-auto sm:w-auto sm:px-5 sm:py-2.5 sm:text-base"
-                        >
-                            Daftar Sebagai Petugas Pengolahan SE2026
-                        </button>
+                        <div class="flex justify-start sm:justify-end">
+                            <button
+                                type="button"
+                                @click="openTermsModal"
+                                class="inline-flex min-h-11 w-full cursor-pointer items-center justify-center rounded-xl bg-green-600 px-4 py-2.5 text-center text-[13px] leading-tight font-semibold text-white transition hover:bg-green-700 sm:h-auto sm:w-auto sm:px-5 sm:py-2.5 sm:text-base"
+                            >
+                                Daftar Sebagai Petugas Pengolahan SE2026
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </section>
+                </section>
 
-            <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <header class="bg-linear-to-r from-cyan-700 to-cyan-600 px-3 py-2.5 sm:px-6 sm:py-4">
-                    <h2 class="text-[15px] leading-snug font-bold tracking-normal text-white sm:text-lg lg:text-xl">CEK STATUS PENDAFTARAN</h2>
-                </header>
+                <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <header class="bg-linear-to-r from-cyan-700 to-cyan-600 px-3 py-2.5 sm:px-6 sm:py-4">
+                        <h2 class="text-[15px] leading-snug font-bold tracking-normal text-white sm:text-lg lg:text-xl">CEK STATUS PENDAFTARAN</h2>
+                    </header>
 
-                <div class="space-y-4 p-4 text-[14px] text-slate-800 sm:space-y-5 sm:p-7 sm:text-base">
-                    <p>Masukkan NIK untuk mengecek apakah Anda sudah terdaftar atau belum :</p>
+                    <div class="space-y-4 p-4 text-[14px] text-slate-800 sm:space-y-5 sm:p-7 sm:text-base">
+                        <p>Masukkan NIK untuk mengecek apakah Anda sudah terdaftar atau belum :</p>
 
-                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <input
-                            v-model="nik"
-                            type="text"
-                            maxlength="16"
-                            placeholder="Masukkan NIK"
-                            class="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm transition outline-none placeholder:text-slate-400 focus:border-cyan-600 sm:h-11 sm:rounded-lg sm:text-base"
-                        />
-                        <button
-                            type="button"
-                            class="h-11 cursor-pointer rounded-xl bg-green-600 px-5 text-sm font-semibold text-white transition hover:bg-green-700 sm:h-11 sm:shrink-0 sm:rounded-lg sm:text-base"
-                        >
-                            Cek Status
-                        </button>
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                            <input
+                                v-model="nik"
+                                type="text"
+                                maxlength="16"
+                                placeholder="Masukkan NIK"
+                                class="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm transition outline-none placeholder:text-slate-400 focus:border-cyan-600 sm:h-11 sm:rounded-lg sm:text-base"
+                            />
+                            <button
+                                type="button"
+                                class="h-11 cursor-pointer rounded-xl bg-green-600 px-5 text-sm font-semibold text-white transition hover:bg-green-700 sm:h-11 sm:shrink-0 sm:rounded-lg sm:text-base"
+                            >
+                                Cek Status
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </section>
+                </section>
             </div>
         </div>
 
@@ -109,44 +110,62 @@ function onTermsScroll(event: Event): void {
                     @scroll="onTermsScroll"
                 >
                     <p>
-                        Pengolahan Hasil Pendataan ST2023 akan dilaksanakan pada rentang bulan Juli-September 2023. Kualifikasi petugas yang
-                        dibutuhkan adalah sebagai berikut:
+                        Pendaftaran calon petugas <strong>Sensus Ekonomi 2026</strong> telah dibuka. Kualifikasi petugas yang dibutuhkan adalah
+                        sebagai berikut:
                     </p>
 
                     <ul class="list-disc space-y-1.5 pl-4.5 sm:pl-7">
-                        <li>Hanya boleh mendaftar pada satu posisi <strong>Receiving Batching, Editing Coding, atau Entri Data</strong>.</li>
-                        <li>Diutamakan berpendidikan minimal <strong>tamat SMA/sederajat</strong>.</li>
-                        <li>Diutamakan berumur <strong>17-50 Tahun</strong>.</li>
-                        <li>Sehat jasmani dan rohani.</li>
-                        <li>Berdomisili di Kabupaten Sumbawa Barat.</li>
+                        <li>Bukan ASN, TNI, dan Polri;</li>
+                        <li>Sehat jasmani/rohani;</li>
+                        <li>Disiplin dan berkomitmen;</li>
+                        <li>Bersedia bekerja terikat kontrak;</li>
+                        <li>Bersedia mengikuti pelatihan;</li>
+                        <li>Mampu berbahasa Indonesia dengan baik serta membaca dan menulis huruf latin;</li>
+                        <li>Mampu berkomunikasi dengan baik;</li>
+                        <li>Pendidikan minimal tamat SMA, <strong>diutamakan Mahasiswa/Sarjana</strong>;</li>
+                        <li>Berdomisili di wilayah pendataan;</li>
+                        <li>Bersedia mengikuti pelatihan dan lulus diatas passing grade;</li>
+                        <li>Berumur 18 - 50 tahun pada saat registrasi;</li>
+                        <li>Memiliki, menguasai, dan dapat menggunakan komputer / gadget / tablet / smartphone;</li>
+                        <li>Memiliki dan mampu mengendarai kendaraan bermotor;</li>
                         <li>
-                            Bersedia bekerja terikat kontrak selama bulan <strong>Juli-Agustus 2023</strong> untuk petugas Receiving Batching dan
-                            Editing Coding serta bulan <strong>Juli-September 2023</strong> untuk petugas Entri Data.
+                            Mampu bekerjasama dan berkoordinasi dengan anggota tim, pegawai BPS, Aparatur Desa/Kelurahan, Ketua/Pengurus SLS, dan
+                            lain-lain.
                         </li>
-                        <li>Disiplin, teliti, dan berkomitmen.</li>
-                        <li>Mampu mengoperasikan komputer dengan baik.</li>
-                        <li>Mampu bekerjasama dan berkoordinasi dengan baik.</li>
                         <li>
-                            Petugas diutamakan <strong>tidak berstatus ASN</strong> (PNS dan P3K) dan tidak memiliki kontrak tertulis dengan
-                            Kementrian/Lembaga/Dinas/Instansi apapun baik pemerintah, BUMN/BUMD, maupun swasta atau tidak memiliki pekerjaan tetap
-                            agar dapat fokus melaksanakan kegiatan ST2023 sesuai yang tertuang dalam kontrak kerja.
-                        </li>
-                        <li>Diutamakan berpengalaman dengan Sensus dan Survei BPS (Pengolahan Data) serta berkinerja baik.</li>
-                        <li>Diutamakan yang tidak sedang hamil.</li>
-                        <li>Mengikuti akun media sosial BPS Kabupaten Sumbawa Barat.</li>
-                        <li>
-                            Mengisi <strong>Formulir Pendaftaran</strong> pada tautan di bawah dan mendaftar di SOBAT BPS (<a
-                                class="text-blue-600 underline hover:text-blue-700"
+                            Registrasi secara mandiri pada Sobat BPS (<a
                                 href="https://simitra.bps.go.id"
                                 target="_blank"
+                                class="font-semibold text-cyan-600 underline hover:text-cyan-700"
                                 >simitra.bps.go.id</a
-                            >).
+                            >);
+                        </li>
+                        <li>
+                            Memiliki <em>gadget/smartphone</em> dengan spesifikasi minimum:
+                            <ul class="mt-1.5 list-[circle] space-y-1 pl-5">
+                                <li>OS Android minimum 7 (Nougat)</li>
+                                <li>Layar minimum 5 inch</li>
+                                <li>Processor Quadcore minimum 1,4GHz</li>
+                                <li>RAM Minimum 4 GB (Free 2 GB)</li>
+                                <li>Storage Internal 32 GB (Free 4 GB)</li>
+                                <li>Terkoneksi dengan internet (wifi atau 3G/4G/LTE)</li>
+                                <li>GPS harus aktif</li>
+                            </ul>
+                        </li>
+                        <li>
+                            Khusus untuk PPPK harus ada surat bebas tugas dari instansi asal dan memiliki kualifikasi seperti pada persyaratan umum.
                         </li>
                     </ul>
 
                     <p>
-                        Jika NIK sudah terdaftar dan ingin memperbaharui data, dapat menghubungi WhatsApp PST BPS Kabupaten Sumbawa Barat di nomor
-                        <strong>0821 4440 6055</strong>.
+                        Jika ada pertanyaan terkait mekanisme pendaftaran, silakan hubungi WhatsApp PST BPS Kabupaten Sumbawa Barat di nomor
+                        <strong>0821 4440 6055</strong> atau
+                        <a
+                            href="https://wa.me/6282144406055?text=Halo!%20saya%20ingin%20bertanya%20terkait%20pendaftaran%20SE%202026"
+                            target="_blank"
+                            class="font-semibold text-cyan-600 underline hover:text-cyan-700"
+                            >klik disini</a
+                        >.
                     </p>
                 </div>
 

@@ -4,6 +4,7 @@ import { ArrowRightToLine, Eye, EyeOff, Lock, Mail } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 defineOptions({
+    // @ts-ignore
     layout: null,
 });
 
@@ -27,7 +28,9 @@ function submit(): void {
 <template>
     <Head title="Login Organik" />
 
-    <div class="relative flex min-h-screen items-center justify-center overflow-hidden bg-linear-to-br from-sky-100 via-cyan-50 to-indigo-100 px-4 py-10">
+    <div
+        class="relative flex min-h-screen items-center justify-center overflow-hidden bg-linear-to-br from-sky-100 via-cyan-50 to-indigo-100 px-4 py-10"
+    >
         <div class="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-cyan-300/30 blur-3xl" />
         <div class="pointer-events-none absolute -right-20 -bottom-24 h-80 w-80 rounded-full bg-indigo-300/30 blur-3xl" />
 
@@ -38,9 +41,7 @@ function submit(): void {
 
             <div class="mb-7 text-center">
                 <h1 class="text-3xl font-bold text-slate-900">Sign in</h1>
-                <p class="mt-2 text-base leading-relaxed text-slate-600">
-                    Login pengguna organik BPS untuk melanjutkan ke sistem.
-                </p>
+                <p class="mt-2 text-base leading-relaxed text-slate-600">Login pengguna organik BPS untuk melanjutkan ke sistem.</p>
             </div>
 
             <form class="space-y-4" @submit.prevent="submit">
@@ -68,11 +69,7 @@ function submit(): void {
                             placeholder="Password"
                             class="w-full bg-transparent text-base text-slate-800 outline-none placeholder:text-slate-500"
                         />
-                        <button
-                            type="button"
-                            class="text-slate-500 transition hover:text-slate-700"
-                            @click="showPassword = !showPassword"
-                        >
+                        <button type="button" class="text-slate-500 transition hover:text-slate-700" @click="showPassword = !showPassword">
                             <EyeOff v-if="showPassword" class="h-5 w-5" />
                             <Eye v-else class="h-5 w-5" />
                         </button>
@@ -100,14 +97,20 @@ function submit(): void {
             </div>
 
             <div class="grid grid-cols-3 gap-3">
-                <button type="button" class="h-12 rounded-xl border border-slate-200 bg-white text-lg font-semibold text-slate-700 shadow-xs">G</button>
-                <button type="button" class="h-12 rounded-xl border border-slate-200 bg-white text-lg font-semibold text-slate-700 shadow-xs">f</button>
-                <button type="button" class="h-12 rounded-xl border border-slate-200 bg-white text-lg font-semibold text-slate-700 shadow-xs"></button>
+                <button type="button" class="h-12 rounded-xl border border-slate-200 bg-white text-lg font-semibold text-slate-700 shadow-xs">
+                    G
+                </button>
+                <button type="button" class="h-12 rounded-xl border border-slate-200 bg-white text-lg font-semibold text-slate-700 shadow-xs">
+                    f
+                </button>
+                <button type="button" class="h-12 rounded-xl border border-slate-200 bg-white text-lg font-semibold text-slate-700 shadow-xs">
+                    
+                </button>
             </div>
 
             <p class="mt-6 text-center text-sm text-slate-600">
                 Kembali ke halaman publik?
-                <Link href="/" class="font-semibold text-cyan-700 hover:underline">Buka Rekruitmen Mitra</Link>
+                <Link href="/" class="font-semibold text-cyan-700 hover:underline">Buka Rekrutmen Mitra</Link>
             </p>
         </div>
     </div>
