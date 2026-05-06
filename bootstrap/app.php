@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->append(HandleCors::class);
         $middleware->alias(['role' => RoleOrPermissionMiddleware::class]);
+        $middleware->redirectUsersTo('/admin/dashboard');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

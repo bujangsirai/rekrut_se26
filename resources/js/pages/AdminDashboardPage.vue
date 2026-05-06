@@ -20,7 +20,6 @@ defineOptions({
     <div class="mx-auto max-w-5xl space-y-5">
             <header class="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <p class="text-xs font-semibold tracking-wider text-slate-500 uppercase">Area Organik</p>
                     <h1 class="text-2xl font-bold text-slate-900">Admin Dashboard</h1>
                     <p class="mt-1 text-sm text-slate-600">
                         Halo, <strong>{{ user?.username ?? 'Pengguna' }}</strong>. Halaman ini hanya bisa diakses setelah login.

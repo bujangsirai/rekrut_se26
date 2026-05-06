@@ -1,8 +1,8 @@
 {
     "groups": [
         {
-            "key": "wawancara",
-            "title": "Wawancara",
+            "key": "seleksi_mitra",
+            "title": "Seleksi Mitra",
             "order": 1
         },
         {
@@ -13,6 +13,21 @@
         }
     ],
     "pages": [
+        {
+            "key": "dashboard",
+            "title": "Dashboard",
+            "level": 2,
+            "section": "seleksi_mitra",
+            "href": "/admin/dashboard"
+        },
+        {
+            "key": "mitra",
+            "title": "Kelola Mitra",
+            "level": 2,
+            "section": "seleksi_mitra",
+            "href": "/admin/mitra",
+            "icon": "clipboard-list"
+        },
         {
             "key": "users",
             "title": "Kelola User",
@@ -30,22 +45,6 @@
             "href": "/admin/roles",
             "icon": "shield-check",
             "roles": ["admin"]
-        },
-        {
-            "key": "mitra",
-            "title": "Kelola Mitra",
-            "level": 2,
-            "section": "wawancara",
-            "href": "/admin/mitra",
-            "icon": "clipboard-list"
-        },
-        {
-            "key": "bps-home",
-            "title": "Website BPS",
-            "level": 2,
-            "section": "wawancara",
-            "href": "https://www.bps.go.id",
-            "icon": "globe"
         }
     ]
 }

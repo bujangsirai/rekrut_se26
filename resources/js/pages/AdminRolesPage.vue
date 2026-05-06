@@ -44,7 +44,6 @@ const tableColumns = getRoleColumns({
 
     <div class="mx-auto max-w-5xl space-y-5">
         <header class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p class="text-xs font-semibold tracking-wider text-slate-500 uppercase">Admin</p>
             <h1 class="text-2xl font-bold text-slate-900">Kelola Role</h1>
             <p class="mt-1 text-sm text-slate-600">CRUD role akses pengguna internal BPS.</p>
         </header>

@@ -7,6 +7,8 @@ use App\Http\Requests\AdminMitraUpdateRequest;
 use App\Models\ApplicantProfile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,6 +21,8 @@ class AdminMitraController extends Controller
             ->select([
                 'mitra.id',
                 'mitra.nik',
+                'mitra.url_ktp',
+                'mitra.kode_akses',
                 'mitra.nama_lengkap',
                 'mitra.email',
                 'mitra.jenis_kelamin',
@@ -48,6 +52,8 @@ class AdminMitraController extends Controller
             ->map(static fn (object $item): array => [
                 'id' => $item->id,
                 'nik' => $item->nik,
+                'url_ktp' => $item->url_ktp ? \Illuminate\Support\Facades\Crypt::encryptString($item->url_ktp) : null,
+                'kode_akses' => $item->kode_akses,
                 'nama_lengkap' => $item->nama_lengkap,
                 'email' => $item->email,
                 'jenis_kelamin' => $item->jenis_kelamin,
@@ -71,8 +77,32 @@ class AdminMitraController extends Controller
             ])
             ->values();
 
+        $kecamatanOptions = DB::table('master_kecamatan_desa')
+            ->select('kode_kec', 'nama_kec')
+            ->distinct()
+            ->orderBy('kode_kec')
+            ->get()
+            ->map(static fn (object $row): array => [
+                'kode_kec' => $row->kode_kec,
+                'nama_kec' => $row->nama_kec,
+            ])
+            ->values();
+
+        $desaOptions = DB::table('master_kecamatan_desa')
+            ->select('kode_kec', 'kode_desa', 'nama_desa')
+            ->orderBy('kode_desa')
+            ->get()
+            ->map(static fn (object $row): array => [
+                'kode_kec' => $row->kode_kec,
+                'kode_desa' => $row->kode_desa,
+                'nama_desa' => $row->nama_desa,
+            ])
+            ->values();
+
         return Inertia::render('AdminMitraPage', [
             'mitra' => $mitra,
+            'kecamatanOptions' => $kecamatanOptions,
+            'desaOptions' => $desaOptions,
         ]);
     }
 
@@ -105,5 +135,20 @@ class AdminMitraController extends Controller
         return redirect()
             ->route('admin.mitra.index')
             ->with('success', 'Data mitra berhasil dihapus.');
+    }
+
+    public function file($payload)
+    {
+        try {
+            $path = \Illuminate\Support\Facades\Crypt::decryptString($payload);
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            abort(404, 'Link file tidak valid.');
+        }
+
+        if (! Storage::disk('local')->exists($path)) {
+            abort(404, 'File tidak ditemukan.');
+        }
+
+        return Storage::disk('local')->response($path);
     }
 }

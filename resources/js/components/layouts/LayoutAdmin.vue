@@ -66,18 +66,7 @@ const menuPages = computed<SidebarPageItem[]>(() => {
         authRoles.value,
     ) as SidebarPageItem[];
 
-    return [
-        {
-            key: 'dashboard',
-            title: 'Dashboard',
-            level: 2,
-            href: '/admin/dashboard',
-            componentKey: 'admin.dashboard',
-            description: 'Ringkasan utama admin.',
-            section: 'admin',
-        },
-        ...roleFilteredPages,
-    ];
+    return roleFilteredPages;
 });
 
 const groupedMenuPages = computed<Array<{ section: string; sectionLabel: string; items: SidebarPageItem[] }>>(() => {

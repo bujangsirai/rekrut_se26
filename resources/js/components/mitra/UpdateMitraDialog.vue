@@ -1,15 +1,24 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { TanStackDatePicker, TanStackInput, TanStackSelect, TanStackTextarea } from '@/components/ui/form';
+import { TanStackCombobox, TanStackDatePicker, TanStackInput, TanStackSelect, TanStackTextarea } from '@/components/ui/form';
 import { router } from '@inertiajs/vue3';
 import { useForm } from '@tanstack/vue-form';
-import { watch } from 'vue';
+import { computed, watch } from 'vue';
 import type { MitraItem } from './mitra-columns';
 
 const props = defineProps<{
     open: boolean;
     mitra: MitraItem | null;
+    kecamatanOptions: Array<{
+        kode_kec: string;
+        nama_kec: string;
+    }>;
+    desaOptions: Array<{
+        kode_kec: string;
+        kode_desa: string;
+        nama_desa: string;
+    }>;
 }>();
 
 const emit = defineEmits<{
@@ -49,6 +58,7 @@ const selectOptions = {
 
 const form = useForm({
     defaultValues: {
+        nik: '',
         nama_lengkap: '',
         email: '',
         jenis_kelamin: 'Laki-laki',
@@ -83,6 +93,42 @@ const form = useForm({
     },
 });
 
+const kecamatanSelectOptions = computed(() =>
+    props.kecamatanOptions.map((item) => ({
+        label: item.nama_kec,
+        value: item.kode_kec,
+    })),
+);
+
+const values = form.useStore((state) => state.values);
+
+const desaSelectOptions = computed(() => {
+    if (!values.value.kode_kec) {
+        return [];
+    }
+
+    return props.desaOptions
+        .filter((item) => item.kode_desa.slice(0, 7) === values.value.kode_kec)
+        .map((item) => ({
+            label: item.nama_desa,
+            value: item.kode_desa,
+        }));
+});
+
+watch(
+    () => values.value.kode_kec,
+    (kodeKec, oldVal) => {
+        // Hanya reset desa jika ini benar-benar perubahan oleh user saat edit
+        // bukan inisialisasi awal saat modal dibuka
+        if (!kodeKec || !oldVal) {
+            return;
+        }
+
+        const firstDesa = props.desaOptions.find((item) => item.kode_desa.slice(0, 7) === kodeKec)?.kode_desa ?? '';
+        form.setFieldValue('kode_desa', firstDesa);
+    },
+);
+
 watch(
     () => props.open,
     (isOpen) => {
@@ -90,6 +136,7 @@ watch(
             return;
         }
 
+        form.setFieldValue('nik', props.mitra.nik);
         form.setFieldValue('nama_lengkap', props.mitra.nama_lengkap);
         form.setFieldValue('email', props.mitra.email);
         form.setFieldValue('jenis_kelamin', props.mitra.jenis_kelamin);
@@ -120,24 +167,36 @@ watch(
 
             <form @submit.prevent="form.handleSubmit" class="space-y-4 py-2">
                 <div class="grid gap-4 md:grid-cols-2">
-                    <TanStackInput :form="form" name="nama_lengkap" label="Nama Lengkap*" />
-                    <TanStackInput :form="form" name="email" label="Email*" type="email" />
-                    <TanStackSelect :form="form" name="jenis_kelamin" label="Jenis Kelamin*" :options="selectOptions.jenisKelamin" />
-                    <TanStackInput :form="form" name="nomor_whatsapp" label="Nomor WhatsApp*" />
-                    <TanStackInput :form="form" name="kode_kec" label="Kode Kecamatan*" />
-                    <TanStackInput :form="form" name="kode_desa" label="Kode Desa*" />
+                    <TanStackInput :form="form" name="nik" label="NIK (16 Digit)*" placeholder="Contoh: 5207xxxxxxxxxxxx" :number-only="true" :maxlength="16" />
+                    <TanStackInput :form="form" name="nama_lengkap" label="Nama Lengkap*" placeholder="Masukkan nama lengkap sesuai KTP" />
+
+                    <TanStackCombobox :form="form" name="kode_kec" label="Asal Kecamatan*" :options="kecamatanSelectOptions" placeholder="Cari kecamatan..." />
+                    <TanStackCombobox :form="form" name="kode_desa" label="Asal Desa*" :options="desaSelectOptions" placeholder="Cari desa..." />
+                    <TanStackInput :form="form" name="tempat_lahir" label="Tempat Lahir*" placeholder="Contoh: Sumbawa Barat" />
                     <TanStackDatePicker :form="form" name="tanggal_lahir" label="Tanggal Lahir*" />
-                    <TanStackInput :form="form" name="tempat_lahir" label="Tempat Lahir*" />
+                    
+                    <TanStackSelect :form="form" name="jenis_kelamin" label="Jenis Kelamin*" :options="selectOptions.jenisKelamin" />
                     <TanStackSelect :form="form" name="status_perkawinan" label="Status Perkawinan*" :options="selectOptions.statusPerkawinan" />
                     <TanStackSelect :form="form" name="pendidikan_terakhir" label="Pendidikan Terakhir*" :options="selectOptions.pendidikanTerakhir" />
-                    <TanStackInput :form="form" name="pekerjaan" label="Pekerjaan*" />
+                    
+                    <TanStackInput :form="form" name="pekerjaan" label="Pekerjaan*" placeholder="Contoh: Wiraswasta / Pegawai Swasta" />
+                    <TanStackInput :form="form" name="nomor_whatsapp" label="Nomor WhatsApp*" placeholder="Contoh: 081234567890" />
+                    <TanStackInput :form="form" name="email" type="email" label="Alamat Email*" placeholder="Contoh: nama@email.com" />
+                    <TanStackInput :form="form" name="alamat_lengkap" label="Alamat Lengkap*" placeholder="Masukkan alamat domisili saat ini" />
+
+                    <div class="md:col-span-2">
+                        <TanStackTextarea :form="form" name="riwayat_kegiatan_bps" label="Riwayat Kegiatan BPS" placeholder="Sebutkan kegiatan BPS yang pernah diikuti, dipisahkan dengan tanda koma" :rows="3" />
+                    </div>
+
+                    <div class="col-span-full mt-2 mb-1 border-b border-slate-200"></div>
+                    <div class="col-span-full">
+                        <h3 class="text-sm font-semibold text-slate-800">Status Seleksi</h3>
+                    </div>
+
                     <TanStackSelect :form="form" name="status_sobat" label="Status Sobat*" :options="selectOptions.statusSobat" />
                     <TanStackSelect :form="form" name="status_wawancara" label="Status Wawancara*" :options="selectOptions.statusWawancara" />
                     <TanStackSelect :form="form" name="status_kelulusan" label="Status Kelulusan*" :options="selectOptions.statusKelulusan" />
                 </div>
-
-                <TanStackTextarea :form="form" name="alamat_lengkap" label="Alamat Lengkap*" :rows="3" />
-                <TanStackTextarea :form="form" name="riwayat_kegiatan_bps" label="Riwayat Kegiatan BPS" :rows="3" />
 
                 <DialogFooter>
                     <form.Subscribe :selector="(state) => state.isSubmitting">

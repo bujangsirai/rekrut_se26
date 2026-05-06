@@ -57,6 +57,8 @@ Route::middleware('auth')->group(function () {
         });
         Route::get('/mitra', [AdminMitraController::class, 'index'])
             ->name('admin.mitra.index');
+        Route::get('/file/{payload}', [AdminMitraController::class, 'file'])
+            ->name('admin.file.show');
         Route::post('/mitra', [AdminMitraController::class, 'store'])
             ->name('admin.mitra.store');
         Route::put('/mitra/{mitra}', [AdminMitraController::class, 'update'])

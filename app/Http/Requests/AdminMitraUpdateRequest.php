@@ -26,6 +26,7 @@ class AdminMitraUpdateRequest extends FormRequest
         $mitraId = $this->route('mitra')?->id ?? $this->route('mitra');
 
         return [
+            'nik' => ['required', 'string', 'size:16', Rule::unique('mitra', 'nik')->ignore($mitraId)],
             'nama_lengkap' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('mitra', 'email')->ignore($mitraId)],
             'jenis_kelamin' => ['required', Rule::in(['Laki-laki', 'Perempuan'])],
