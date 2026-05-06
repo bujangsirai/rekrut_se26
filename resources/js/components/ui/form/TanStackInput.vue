@@ -24,7 +24,7 @@ const showPassword = ref(false);
     <props.form.Field :name="name" :validators="validators">
         <template #default="{ field }">
             <div class="space-y-2">
-                <Label :for="name">
+                <Label v-if="label" :for="name">
                     {{ label }}
                 </Label>
 
@@ -36,7 +36,18 @@ const showPassword = ref(false);
                         :model-value="field.state.value"
                         :spellcheck="spellcheck ?? false"
                         :maxlength="maxlength"
+                        :inputmode="numberOnly ? 'numeric' : undefined"
                         @blur="field.handleBlur"
+                        @keypress="
+                            (e: KeyboardEvent) => {
+                                if (numberOnly) {
+                                    // Allow control keys like backspace, tab, etc.
+                                    if (e.key.length === 1 && !/^[0-9]$/.test(e.key)) {
+                                        e.preventDefault();
+                                    }
+                                }
+                            }
+                        "
                         @input="
                             (e: Event) => {
                                 let val = (e.target as HTMLInputElement).value;

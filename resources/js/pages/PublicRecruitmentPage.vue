@@ -91,40 +91,45 @@ const page = usePage();
                     </header>
 
                     <div class="space-y-4 p-4 text-[14px] text-slate-800 sm:space-y-5 sm:p-7 sm:text-base">
-                        <form
-                            class="flex flex-col gap-3 sm:flex-row sm:items-end"
-                            @submit.prevent="
-                                (e) => {
-                                    e.stopPropagation();
-                                    form.handleSubmit();
-                                }
-                            "
-                        >
-                            <div class="flex-1">
-                                <TanStackInput
-                                    :form="form"
-                                    name="nik"
-                                    label="Masukkan NIK untuk mengecek apakah Anda sudah terdaftar atau belum :"
-                                    placeholder="Contoh: 5207xxxxxxxxxxxx"
-                                    :number-only="true"
-                                    :maxlength="16"
-                                    :validators="{
-                                        // @ts-ignore
-                                        onChange: ({ value }) => {
-                                            if (!value) return 'NIK wajib diisi';
-                                            if (value.length !== 16) return 'NIK harus 16 angka';
-                                            return undefined;
-                                        },
-                                    }"
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                class="h-11 cursor-pointer rounded-xl bg-green-600 px-5 text-sm font-semibold text-white transition hover:bg-green-700 sm:h-11 sm:shrink-0 sm:rounded-lg sm:text-base"
+                        <div class="space-y-3">
+                            <label class="block text-[14px] font-medium sm:text-base text-slate-800">
+                                Masukkan NIK untuk mengecek apakah Anda sudah terdaftar atau belum :
+                            </label>
+                            <form
+                                class="flex flex-col gap-3 sm:flex-row sm:items-start"
+                                @submit.prevent="
+                                    (e) => {
+                                        e.stopPropagation();
+                                        form.handleSubmit();
+                                    }
+                                "
                             >
-                                Cek Status
-                            </button>
-                        </form>
+                                <div class="flex-1">
+                                    <TanStackInput
+                                        :form="form"
+                                        name="nik"
+                                        label=""
+                                        placeholder="Contoh: 5207xxxxxxxxxxxx"
+                                        :number-only="true"
+                                        :maxlength="16"
+                                        :validators="{
+                                            // @ts-ignore
+                                            onSubmit: ({ value }) => {
+                                                if (!value) return 'NIK wajib diisi';
+                                                if (value.length !== 16) return 'NIK harus 16 angka';
+                                                return undefined;
+                                            },
+                                        }"
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    class="h-11 cursor-pointer rounded-xl bg-green-600 px-5 text-sm font-semibold text-white transition hover:bg-green-700 sm:h-11 sm:shrink-0 sm:rounded-lg sm:text-base"
+                                >
+                                    Cek Status
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -175,10 +180,10 @@ const page = usePage();
                         </li>
                         <li>
                             Registrasi secara mandiri pada Sobat BPS (<a
-                                href="https://simitra.bps.go.id"
+                                href="https://mitra.bps.go.id"
                                 target="_blank"
                                 class="font-semibold text-cyan-600 underline hover:text-cyan-700"
-                                >simitra.bps.go.id</a
+                                >https://mitra.bps.go.id/</a
                             >);
                         </li>
                         <li>

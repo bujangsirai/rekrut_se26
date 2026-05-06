@@ -74,7 +74,7 @@ class PublicRegistrationController extends Controller
         if (! $mitra) {
             return redirect()
                 ->back()
-                ->withErrors(['nik' => 'NIK tidak ditemukan dalam sistem kami.']);
+                ->withErrors(['nik' => 'NIK yang anda masukkan belum terdaftar, silahkan cek kembali NIK anda atau mendaftar terlebih dahulu']);
         }
 
         return redirect()->route('public.status', ['nik' => $request->nik]);

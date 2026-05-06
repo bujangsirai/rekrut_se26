@@ -2,6 +2,7 @@
 import { TanStackCombobox, TanStackInput, TanStackSelect, TanStackTextarea } from '@/components/ui/form';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { useForm } from '@tanstack/vue-form';
+import { File } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 defineOptions({
@@ -150,9 +151,24 @@ onBeforeUnmount(() => {
                     </header>
 
                     <div class="grid gap-4 p-4 sm:p-6 md:grid-cols-2">
-                        <TanStackInput :form="form" name="nik" label="NIK (16 Digit)*" :number-only="true" :maxlength="16" />
-                        <TanStackInput :form="form" name="nama_lengkap" label="Nama Lengkap*" />
-                        <TanStackInput :form="form" name="nomor_whatsapp" label="Nomor WhatsApp*" />
+                        <TanStackInput
+                            :form="form"
+                            name="nik"
+                            label="NIK (16 Digit)*"
+                            placeholder="Contoh: 5207xxxxxxxxxxxx"
+                            :number-only="true"
+                            :maxlength="16"
+                            :validators="{
+                                onSubmit: ({ value }: any) => (!value ? 'NIK wajib diisi' : value.length !== 16 ? 'NIK harus 16 angka' : undefined),
+                            }"
+                        />
+                        <TanStackInput
+                            :form="form"
+                            name="nama_lengkap"
+                            label="Nama Lengkap*"
+                            placeholder="Masukkan nama lengkap sesuai KTP"
+                            :validators="{ onSubmit: ({ value }: any) => (!value ? 'Nama lengkap wajib diisi' : undefined) }"
+                        />
 
                         <TanStackCombobox
                             :form="form"
@@ -160,10 +176,30 @@ onBeforeUnmount(() => {
                             label="Asal Kecamatan*"
                             :options="kecamatanSelectOptions"
                             placeholder="Cari kecamatan..."
+                            :validators="{ onSubmit: ({ value }: any) => (!value ? 'Kecamatan wajib dipilih' : undefined) }"
                         />
-                        <TanStackCombobox :form="form" name="kode_desa" label="Asal Desa*" :options="desaSelectOptions" placeholder="Cari desa..." />
-                        <TanStackInput :form="form" name="tempat_lahir" label="Tempat Lahir*" />
-                        <TanStackInput :form="form" name="tanggal_lahir" type="date" label="Tanggal Lahir*" />
+                        <TanStackCombobox
+                            :form="form"
+                            name="kode_desa"
+                            label="Asal Desa*"
+                            :options="desaSelectOptions"
+                            placeholder="Cari desa..."
+                            :validators="{ onSubmit: ({ value }: any) => (!value ? 'Desa wajib dipilih' : undefined) }"
+                        />
+                        <TanStackInput
+                            :form="form"
+                            name="tempat_lahir"
+                            label="Tempat Lahir*"
+                            placeholder="Contoh: Sumbawa Barat"
+                            :validators="{ onSubmit: ({ value }: any) => (!value ? 'Tempat lahir wajib diisi' : undefined) }"
+                        />
+                        <TanStackInput
+                            :form="form"
+                            name="tanggal_lahir"
+                            type="date"
+                            label="Tanggal Lahir*"
+                            :validators="{ onSubmit: ({ value }: any) => (!value ? 'Tanggal lahir wajib diisi' : undefined) }"
+                        />
                         <TanStackSelect
                             :form="form"
                             name="jenis_kelamin"
@@ -195,12 +231,45 @@ onBeforeUnmount(() => {
                                 { label: 'DIV/S1/S2/S3', value: 'DIV/S1/S2/S3' },
                             ]"
                         />
-                        <TanStackInput :form="form" name="pekerjaan" label="Pekerjaan*" />
-                        <TanStackInput :form="form" name="email" type="email" label="Alamat Email*" />
-                        <TanStackInput :form="form" name="alamat_lengkap" label="Alamat Lengkap*" />
+                        <TanStackInput
+                            :form="form"
+                            name="pekerjaan"
+                            label="Pekerjaan*"
+                            placeholder="Contoh: Wiraswasta / Pegawai Swasta"
+                            :validators="{ onSubmit: ({ value }: any) => (!value ? 'Pekerjaan wajib diisi' : undefined) }"
+                        />
+                        <TanStackInput
+                            :form="form"
+                            name="nomor_whatsapp"
+                            label="Nomor WhatsApp*"
+                            placeholder="Contoh: 081234567890"
+                            :validators="{ onSubmit: ({ value }: any) => (!value ? 'Nomor WhatsApp wajib diisi' : undefined) }"
+                        />
+
+                        <TanStackInput
+                            :form="form"
+                            name="email"
+                            type="email"
+                            label="Alamat Email*"
+                            placeholder="Contoh: nama@email.com"
+                            :validators="{ onSubmit: ({ value }: any) => (!value ? 'Email wajib diisi' : undefined) }"
+                        />
+                        <TanStackInput
+                            :form="form"
+                            name="alamat_lengkap"
+                            label="Alamat Lengkap*"
+                            placeholder="Masukkan alamat domisili saat ini"
+                            :validators="{ onSubmit: ({ value }: any) => (!value ? 'Alamat lengkap wajib diisi' : undefined) }"
+                        />
 
                         <div class="md:col-span-2">
-                            <TanStackTextarea :form="form" name="riwayat_kegiatan_bps" label="Riwayat Kegiatan BPS" :rows="3" />
+                            <TanStackTextarea
+                                :form="form"
+                                name="riwayat_kegiatan_bps"
+                                label="Riwayat Kegiatan BPS"
+                                placeholder="Sebutkan kegiatan BPS yang pernah diikuti, dipisahkan dengan tanda koma"
+                                :rows="3"
+                            />
                         </div>
                     </div>
                 </section>
@@ -211,17 +280,38 @@ onBeforeUnmount(() => {
                     </header>
                     <div class="grid gap-4 p-4 sm:p-6 md:grid-cols-2">
                         <div class="md:col-span-2">
-                            <form.Field name="ktp_file">
+                            <form.Field
+                                name="ktp_file"
+                                :validators="{ onSubmit: ({ value }: any) => (!value ? 'File KTP wajib diunggah' : undefined) }"
+                            >
                                 <template #default="{ field }">
                                     <div class="space-y-2">
                                         <label class="text-sm font-medium">Upload KTP*</label>
-                                        <input
-                                            type="file"
-                                            accept=".pdf,image/png,image/jpeg,image/jpg,image/webp"
-                                            class="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-cyan-50 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-cyan-700"
-                                            @change="(event: Event) => field.handleChange((event.target as HTMLInputElement).files?.[0] ?? null)"
-                                        />
+                                        <div class="relative">
+                                            <input
+                                                type="file"
+                                                accept=".pdf,image/png,image/jpeg,image/jpg,image/webp"
+                                                class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                                                @change="(event: Event) => field.handleChange((event.target as HTMLInputElement).files?.[0] ?? null)"
+                                            />
+                                            <div class="flex w-full items-center rounded-md border border-slate-300 bg-white text-sm">
+                                                <div
+                                                    class="m-[3px] cursor-pointer rounded-md bg-cyan-50 px-3 py-1.5 text-sm font-semibold text-cyan-700"
+                                                >
+                                                    Pilih File
+                                                </div>
+                                                <span class="truncate px-2" :class="field.state.value ? 'text-slate-900' : 'text-slate-500'">
+                                                    {{ field.state.value instanceof File ? field.state.value.name : 'Belum ada file yang dipilih' }}
+                                                </span>
+                                            </div>
+                                        </div>
                                         <p class="text-xs text-slate-500">Format: pdf/jpg/jpeg/png. Maksimal 5MB.</p>
+                                        <p v-if="field.state.meta.errors.length" class="mt-1 text-xs text-destructive">
+                                            {{ field.state.meta.errors.join(', ') }}
+                                        </p>
+                                        <p v-else-if="$page.props.errors?.ktp_file" class="mt-1 text-xs text-destructive">
+                                            {{ $page.props.errors.ktp_file }}
+                                        </p>
                                         <a
                                             v-if="temporaryKtpPreviewUrl"
                                             :href="temporaryKtpPreviewUrl"
@@ -234,14 +324,13 @@ onBeforeUnmount(() => {
                                     </div>
                                 </template>
                             </form.Field>
-                            <p v-if="$page.props.errors?.ktp_file" class="mt-1 text-xs text-destructive">{{ $page.props.errors.ktp_file }}</p>
                         </div>
                     </div>
                     <div class="flex justify-end px-4 pb-4 sm:px-6 sm:pb-6">
                         <button
                             type="submit"
                             :disabled="isSubmitting"
-                            class="cursor-pointer inline-flex h-10 items-center justify-center rounded-lg bg-green-600 px-5 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-60"
+                            class="inline-flex h-10 cursor-pointer items-center justify-center rounded-lg bg-green-600 px-5 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {{ isSubmitting ? 'Mengirim...' : 'Kirim Pendaftaran' }}
                         </button>
