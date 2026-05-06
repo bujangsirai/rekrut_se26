@@ -235,7 +235,6 @@ const showSearch = computed(() => isMultiField.value || !!activeSearchColumn.val
                                         ? 'bg-muted/80'
                                         : '',
                                 ]"
-                                @click="hasExpandedRow && row.toggleExpanded()"
                             >
                                 <TableCell
                                     v-for="cell in row.getVisibleCells()"

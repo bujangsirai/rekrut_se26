@@ -132,6 +132,20 @@ const page = usePage();
                         </div>
                     </div>
                 </section>
+
+                <div class="text-center">
+                    <p class="text-[13px] text-slate-600 sm:text-[15px]">
+                        Ada kendala atau pertanyaan? Silakan hubungi WhatsApp PST BPS KSB:
+                        <a 
+                            href="https://wa.me/6282144406055" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            class="font-semibold text-cyan-700 hover:text-cyan-800 hover:underline"
+                        >
+                            0821 4440 6055
+                        </a>
+                    </p>
+                </div>
             </div>
         </div>
 

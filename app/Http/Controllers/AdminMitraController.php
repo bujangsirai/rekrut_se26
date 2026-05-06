@@ -17,46 +17,57 @@ class AdminMitraController extends Controller
     {
         $mitra = ApplicantProfile::query()
             ->select([
-                'id',
-                'nama_lengkap',
-                'email',
-                'jenis_kelamin',
-                'kode_kec',
-                'kode_desa',
-                'nomor_whatsapp',
-                'status_sobat',
-                'status_wawancara',
-                'status_kelulusan',
-                'tanggal_lahir',
-                'tempat_lahir',
-                'status_perkawinan',
-                'pendidikan_terakhir',
-                'pekerjaan',
-                'alamat_lengkap',
-                'riwayat_kegiatan_bps',
-                'created_at',
+                'mitra.id',
+                'mitra.nik',
+                'mitra.nama_lengkap',
+                'mitra.email',
+                'mitra.jenis_kelamin',
+                'mitra.kode_kec',
+                'mitra.kode_desa',
+                'mitra.nomor_whatsapp',
+                'mitra.status_sobat',
+                'mitra.status_wawancara',
+                'mitra.status_kelulusan',
+                'mitra.tanggal_lahir',
+                'mitra.tempat_lahir',
+                'mitra.status_perkawinan',
+                'mitra.pendidikan_terakhir',
+                'mitra.pekerjaan',
+                'mitra.alamat_lengkap',
+                'mitra.riwayat_kegiatan_bps',
+                'mitra.created_at',
+                'mkd.nama_kec',
+                'mkd.nama_desa',
             ])
-            ->latest('id')
+            ->leftJoin('master_kecamatan_desa as mkd', function ($join) {
+                $join->on('mitra.kode_kec', '=', 'mkd.kode_kec')
+                     ->on('mitra.kode_desa', '=', 'mkd.kode_desa');
+            }, null, null)
+            ->latest('mitra.id')
             ->get()
-            ->map(static fn (ApplicantProfile $item): array => [
+            ->map(static fn (object $item): array => [
                 'id' => $item->id,
+                'nik' => $item->nik,
                 'nama_lengkap' => $item->nama_lengkap,
                 'email' => $item->email,
                 'jenis_kelamin' => $item->jenis_kelamin,
                 'kode_kec' => $item->kode_kec,
+                'nama_kec' => $item->nama_kec,
                 'kode_desa' => $item->kode_desa,
+                'nama_desa' => $item->nama_desa,
                 'nomor_whatsapp' => $item->nomor_whatsapp,
                 'status_sobat' => $item->status_sobat,
                 'status_wawancara' => $item->status_wawancara,
                 'status_kelulusan' => $item->status_kelulusan,
-                'tanggal_lahir' => $item->tanggal_lahir?->format('Y-m-d'),
+                // Pastikan Intelephense tidak protes karena mengira ini dipanggil dari stdClass
+                'tanggal_lahir' => \Carbon\Carbon::parse($item->tanggal_lahir)->format('Y-m-d'),
                 'tempat_lahir' => $item->tempat_lahir,
                 'status_perkawinan' => $item->status_perkawinan,
                 'pendidikan_terakhir' => $item->pendidikan_terakhir,
                 'pekerjaan' => $item->pekerjaan,
                 'alamat_lengkap' => $item->alamat_lengkap,
                 'riwayat_kegiatan_bps' => $item->riwayat_kegiatan_bps,
-                'created_at' => $item->created_at?->toDateTimeString(),
+                'created_at' => $item->created_at ? \Carbon\Carbon::parse($item->created_at)->toDateTimeString() : null,
             ])
             ->values();
 
@@ -89,7 +100,7 @@ class AdminMitraController extends Controller
 
     public function destroy(ApplicantProfile $mitra): RedirectResponse
     {
-        $mitra->delete();
+        $mitra->deleteOrFail();
 
         return redirect()
             ->route('admin.mitra.index')

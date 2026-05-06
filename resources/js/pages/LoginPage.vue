@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowRightToLine, Eye, EyeOff, Lock, Mail } from 'lucide-vue-next';
+import { ArrowRightToLine, Eye, EyeOff, Lock, Mail, User } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 defineOptions({
@@ -26,7 +26,7 @@ function submit(): void {
 </script>
 
 <template>
-    <Head title="Login Organik" />
+    <Head title="Login Pegawai BPS" />
 
     <div
         class="relative flex min-h-screen items-center justify-center overflow-hidden bg-linear-to-br from-sky-100 via-cyan-50 to-indigo-100 px-4 py-10"
@@ -47,7 +47,7 @@ function submit(): void {
             <form class="space-y-3" @submit.prevent="submit">
                 <div>
                     <div class="flex h-12 items-center gap-3 rounded-xl border border-slate-200 bg-slate-100/90 px-3.5">
-                        <Mail class="h-5 w-5 text-slate-500" />
+                        <User class="h-5 w-5 text-slate-500" />
                         <input
                             v-model="form.username"
                             type="text"
@@ -87,8 +87,8 @@ function submit(): void {
             </form>
 
             <p class="mt-5 text-center text-sm text-slate-600">
-                Kembali ke halaman publik?
-                <Link href="/" class="font-semibold text-cyan-700 hover:underline">Buka Rekrutmen Mitra</Link>
+                Bukan Pegawai BPS? Kembali ke
+                <Link href="/" class="font-semibold text-cyan-700 hover:underline"> Rekrutmen Mitra</Link>
             </p>
         </div>
     </div>

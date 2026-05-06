@@ -2,7 +2,6 @@
 import { TanStackCombobox, TanStackInput, TanStackSelect, TanStackTextarea } from '@/components/ui/form';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { useForm } from '@tanstack/vue-form';
-import { File } from 'lucide-vue-next';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 defineOptions({
@@ -301,7 +300,7 @@ onBeforeUnmount(() => {
                                                     Pilih File
                                                 </div>
                                                 <span class="truncate px-2" :class="field.state.value ? 'text-slate-900' : 'text-slate-500'">
-                                                    {{ field.state.value instanceof File ? field.state.value.name : 'Belum ada file yang dipilih' }}
+                                                    {{ field.state.value?.name ?? 'Belum ada file yang dipilih' }}
                                                 </span>
                                             </div>
                                         </div>

@@ -59,8 +59,27 @@ class PublicRegistrationController extends Controller
         ]);
 
         return redirect()
-            ->route('public.register')
-            ->with('success', 'Pendaftaran berhasil dikirim. Tim kami akan menghubungi Anda.');
+            ->route('public.register.success')
+            ->with([
+                'success' => true,
+                'nik' => $validated['nik'],
+                'nama_lengkap' => $validated['nama_lengkap'],
+            ]);
+    }
+
+    public function success(): Response|RedirectResponse
+    {
+        $nik = session('nik');
+        $nama_lengkap = session('nama_lengkap');
+
+        if (! $nik || ! $nama_lengkap) {
+            return redirect()->route('public.register');
+        }
+
+        return Inertia::render('PublicRegistrationSuccessPage', [
+            'nik' => $nik,
+            'nama_lengkap' => $nama_lengkap,
+        ]);
     }
 
     public function checkStatus(Request $request): RedirectResponse
@@ -77,11 +96,19 @@ class PublicRegistrationController extends Controller
                 ->withErrors(['nik' => 'NIK yang anda masukkan belum terdaftar, silahkan cek kembali NIK anda atau mendaftar terlebih dahulu']);
         }
 
-        return redirect()->route('public.status', ['nik' => $request->nik]);
+        return redirect()
+            ->route('public.status')
+            ->with(['status_nik' => $mitra->nik]);
     }
 
-    public function showStatus(string $nik): Response
+    public function showStatus(): Response|RedirectResponse
     {
+        $nik = session('status_nik');
+
+        if (! $nik) {
+            return redirect()->route('home');
+        }
+
         $mitra = ApplicantProfile::query()->where('nik', $nik)->firstOrFail();
 
         return Inertia::render('PublicStatusPage', [
