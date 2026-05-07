@@ -92,7 +92,7 @@ const page = usePage();
 
                     <div class="space-y-4 p-4 text-[14px] text-slate-800 sm:space-y-5 sm:p-7 sm:text-base">
                         <div class="space-y-3">
-                            <label class="block text-[14px] font-medium sm:text-base text-slate-800">
+                            <label class="block text-[14px] font-medium text-slate-800 sm:text-base">
                                 Masukkan NIK untuk mengecek apakah Anda sudah terdaftar atau belum :
                             </label>
                             <form
@@ -136,9 +136,9 @@ const page = usePage();
                 <div class="text-center">
                     <p class="text-[13px] text-slate-600 sm:text-[15px]">
                         Ada kendala atau pertanyaan? Silakan hubungi WhatsApp PST BPS KSB:
-                        <a 
-                            href="https://wa.me/6282144406055" 
-                            target="_blank" 
+                        <a
+                            href="https://wa.me/6282144406055"
+                            target="_blank"
                             rel="noopener noreferrer"
                             class="font-semibold text-cyan-700 hover:text-cyan-800 hover:underline"
                         >
@@ -173,35 +173,31 @@ const page = usePage();
                         Pendaftaran calon petugas <strong>Sensus Ekonomi 2026</strong> telah dibuka. Kualifikasi petugas yang dibutuhkan adalah
                         sebagai berikut:
                     </p>
-
                     <ul class="list-disc space-y-1.5 pl-4.5 sm:pl-7">
-                        <li>Bukan ASN, TNI, dan Polri;</li>
-                        <li>Sehat jasmani/rohani;</li>
+                        <li>Bukan Aparatur Sipil Negara (ASN);</li>
+                        <li>Sehat jasmani dan rohani;</li>
                         <li>Disiplin dan berkomitmen;</li>
                         <li>Bersedia bekerja terikat kontrak;</li>
-                        <li>Bersedia mengikuti pelatihan;</li>
                         <li>Mampu berbahasa Indonesia dengan baik serta membaca dan menulis huruf latin;</li>
                         <li>Mampu berkomunikasi dengan baik;</li>
                         <li>Pendidikan minimal tamat SMA, <strong>diutamakan Mahasiswa/Sarjana</strong>;</li>
                         <li>Berdomisili di wilayah pendataan;</li>
-                        <li>Bersedia mengikuti pelatihan dan lulus diatas passing grade;</li>
-                        <li>Berumur 18 - 50 tahun pada saat registrasi;</li>
-                        <li>Memiliki, menguasai, dan dapat menggunakan komputer / gadget / tablet / smartphone;</li>
-                        <li>Memiliki dan mampu mengendarai kendaraan bermotor;</li>
+                        <li>Bersedia mengikuti pelatihan dan lulus diatas <i>passing grade;</i></li>
+                        <li>Diutamakan berumur 18 - 50 tahun pada saat registrasi;</li>
+                        <li>Memiliki/menguasai dan dapat menggunakan tablet/<i>smartphone;</i></li>
+                        <li>Memiliki/menguasai dan mampu mengendarai kendaraan bermotor;</li>
                         <li>
                             Mampu bekerjasama dan berkoordinasi dengan anggota tim, pegawai BPS, Aparatur Desa/Kelurahan, Ketua/Pengurus SLS, dan
-                            lain-lain.
+                            lain-lain;
                         </li>
                         <li>
-                            Registrasi secara mandiri pada Sobat BPS (<a
-                                href="https://mitra.bps.go.id"
-                                target="_blank"
-                                class="font-semibold text-cyan-600 underline hover:text-cyan-700"
-                                >https://mitra.bps.go.id/</a
+                            Melakukan registrasi secara mandiri pada Aplikasi Sobat BPS (melalui website
+                            <a href="https://mitra.bps.go.id/" target="_blank" class="font-semibold text-cyan-600 underline hover:text-cyan-700"
+                                >simitra</a
                             >);
                         </li>
                         <li>
-                            Memiliki <em>gadget/smartphone</em> dengan spesifikasi minimum:
+                            Memiliki/Menguasai tablet/smartphone dengan spesifikasi minimum:
                             <ul class="mt-1.5 list-[circle] space-y-1 pl-5">
                                 <li>OS Android minimum 7 (Nougat)</li>
                                 <li>Layar minimum 5 inch</li>
@@ -212,11 +208,7 @@ const page = usePage();
                                 <li>GPS harus aktif</li>
                             </ul>
                         </li>
-                        <li>
-                            Khusus untuk PPPK harus ada surat bebas tugas dari instansi asal dan memiliki kualifikasi seperti pada persyaratan umum.
-                        </li>
                     </ul>
-
                     <p>
                         Jika ada pertanyaan terkait mekanisme pendaftaran, silakan hubungi WhatsApp PST BPS Kabupaten Sumbawa Barat di nomor
                         <strong>0821 4440 6055</strong> atau
@@ -252,6 +244,5 @@ const page = usePage();
                 </footer>
             </div>
         </div>
-
     </div>
 </template>

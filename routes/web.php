@@ -22,6 +22,8 @@ Route::post('/cek-status', [PublicRegistrationController::class, 'checkStatus'])
     ->name('public.check-status');
 Route::get('/status', [PublicRegistrationController::class, 'showStatus'])
     ->name('public.status');
+Route::get('/seleksi/{kode_akses}', [PublicRegistrationController::class, 'selection'])
+    ->name('public.selection');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginPageController::class, 'index'])

@@ -53,7 +53,7 @@ class PublicRegistrationController extends Controller
             ...$validated,
             'url_ktp' => $ktpPath,
             'kode_akses' => Str::uuid()->toString(),
-            'kode_akses_kedaluwarsa_pada' => now()->addDays(30),
+            'kode_akses_kedaluwarsa_pada' => now()->addMonths(3),
             'status_wawancara' => 'Belum Wawancara',
             'status_kelulusan' => 'Belum Lulus',
         ]);
@@ -112,6 +112,29 @@ class PublicRegistrationController extends Controller
         $mitra = ApplicantProfile::query()->where('nik', $nik)->firstOrFail();
 
         return Inertia::render('PublicStatusPage', [
+            'mitra' => $mitra,
+        ]);
+    }
+
+    public function selection(string $kode_akses): Response|RedirectResponse
+    {
+        $mitra = ApplicantProfile::query()
+            ->where('kode_akses', $kode_akses)
+            ->first();
+
+        if (! $mitra) {
+            abort(404, 'Kode akses tidak valid.');
+        }
+
+        if ($mitra->kode_akses_kedaluwarsa_pada && $mitra->kode_akses_kedaluwarsa_pada->isPast()) {
+            abort(403, 'Kode akses telah kedaluwarsa.');
+        }
+
+        $mitra->update([
+            'terakhir_diakses_pada' => now(),
+        ]);
+
+        return Inertia::render('SelectionStatusPage', [
             'mitra' => $mitra,
         ]);
     }
