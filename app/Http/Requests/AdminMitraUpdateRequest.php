@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\ApplicantProfile;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -23,12 +24,21 @@ class AdminMitraUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        $mitraId = $this->route('mitra')?->id ?? $this->route('mitra');
+        $mitra = $this->route('mitra');
+        $mitraId = $mitra instanceof ApplicantProfile ? $mitra->id : $mitra;
+        $originalEmail = $mitra instanceof ApplicantProfile ? $mitra->email : null;
 
         return [
             'nik' => ['required', 'string', 'size:16', Rule::unique('mitra', 'nik')->ignore($mitraId)],
             'nama_lengkap' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('mitra', 'email')->ignore($mitraId)],
+            'email' => [
+                'required',
+                'string',
+                'lowercase',
+                'email',
+                'max:255',
+                $this->email !== $originalEmail ? Rule::unique('mitra', 'email')->ignore($mitraId) : '',
+            ],
             'jenis_kelamin' => ['required', Rule::in(['Laki-laki', 'Perempuan'])],
             'kode_kec' => ['required', 'string', 'max:7'],
             'kode_desa' => ['required', 'string', 'max:10'],

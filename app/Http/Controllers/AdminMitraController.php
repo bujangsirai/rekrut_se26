@@ -23,15 +23,21 @@ class AdminMitraController extends Controller
         $mitra = ApplicantProfile::query()
             ->select([
                 'mitra.*',
-                'mkd.nama_kec',
-                'mkd.nama_desa',
+                'mkd_ktp.nama_kec as nama_kec_ktp',
+                'mkd_ktp.nama_desa as nama_desa_ktp',
+                'mkd_dom.nama_kec as nama_kec_dom',
+                'mkd_dom.nama_desa as nama_desa_dom',
                 'mb_ktp.file_path as ktp_path',
                 'mb_spek.file_path as spek_hp_path',
                 'mb_ig.file_path as follow_ig_path',
             ])
-            ->leftJoin('master_kecamatan_desa as mkd', function ($join) {
-                $join->on('mitra.kode_kec', '=', 'mkd.kode_kec')
-                    ->on('mitra.kode_desa', '=', 'mkd.kode_desa');
+            ->leftJoin('master_kecamatan_desa as mkd_ktp', function ($join) {
+                $join->on('mitra.kode_kec', '=', 'mkd_ktp.kode_kec')
+                    ->on('mitra.kode_desa', '=', 'mkd_ktp.kode_desa');
+            }, null, null)
+            ->leftJoin('master_kecamatan_desa as mkd_dom', function ($join) {
+                $join->on('mitra.kode_kec_dom', '=', 'mkd_dom.kode_kec')
+                    ->on('mitra.kode_desa_dom', '=', 'mkd_dom.kode_desa');
             }, null, null)
             ->leftJoin('mitra_berkas as mb_ktp', function ($join) {
                 $join->on('mitra.nik', '=', 'mb_ktp.nik')
@@ -58,9 +64,9 @@ class AdminMitraController extends Controller
                 'email' => $item->email,
                 'jenis_kelamin' => $item->jenis_kelamin,
                 'kode_kec' => $item->kode_kec,
-                'nama_kec' => $item->nama_kec,
+                'nama_kec' => $item->nama_kec_dom ?? $item->nama_kec_ktp,
                 'kode_desa' => $item->kode_desa,
-                'nama_desa' => $item->nama_desa,
+                'nama_desa' => $item->nama_desa_dom ?? $item->nama_desa_ktp,
                 'nomor_whatsapp' => $item->nomor_whatsapp,
                 'status_sobat' => $item->status_sobat,
                 'status_wawancara' => $item->status_wawancara,

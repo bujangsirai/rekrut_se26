@@ -25,13 +25,15 @@ defineProps<{
 
             <div class="p-6 text-center sm:p-8">
                 <p class="mb-6 leading-relaxed text-slate-600">
-                    Terima kasih, <strong class="text-slate-800">{{ nama_lengkap }}</strong><br />
+                    Terima kasih, <strong class="text-slate-800">{{ nama_lengkap }}</strong
+                    ><br />
                     <span class="text-sm">(NIK: {{ nik }})</span><br /><br />
-                    <strong class="text-cyan-700">Pendaftaran anda telah berhasil.</strong>
+                    <strong class="text-cyan-700">Pra Registrasi anda telah berhasil.</strong>
                 </p>
 
                 <p class="mb-8 text-sm text-slate-500">
-                    Mohon menunggu informasi tahapan seleksi berikutnya yang akan kami sampaikan melalui WhatsApp PST BPS KSB.
+                    Langkah berikutnya, bagi yang belum memiliki akun mitra BPS, silahkan melanjutkan registrasi ke
+                    <a href="https://mitra.bps.go.id" target="_blank" class="font-semibold text-cyan-600 underline hover:text-cyan-700">Sobat BPS</a>
                 </p>
 
                 <div class="mt-8">
