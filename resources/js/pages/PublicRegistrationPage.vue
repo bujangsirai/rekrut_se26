@@ -5,14 +5,7 @@ import { useForm } from '@tanstack/vue-form';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { media } from '@/lib/media';
 import { toast } from 'vue-sonner';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
 defineOptions({
@@ -60,6 +53,7 @@ const form = useForm({
         pendidikan_terakhir: 'SLTP/Kebawah',
         pekerjaan: '',
         is_not_asn: false,
+        is_not_hamil: true,
         is_motor: true,
         nomor_whatsapp: '',
         merk_hp: '',
@@ -96,6 +90,7 @@ const performSubmission = () => {
     payload.append('pendidikan_terakhir', value.pendidikan_terakhir);
     payload.append('pekerjaan', value.pekerjaan);
     payload.append('is_not_asn', value.is_not_asn ? '1' : '0');
+    payload.append('is_not_hamil', value.is_not_hamil ? '1' : '0');
     payload.append('is_motor', value.is_motor ? '1' : '0');
     payload.append('nomor_whatsapp', value.nomor_whatsapp);
     payload.append('merk_hp', value.merk_hp);
@@ -414,12 +409,12 @@ onBeforeUnmount(() => {
                             label="Nomor WhatsApp*"
                             placeholder="Contoh: 081234567890"
                             :phone-only="true"
-                            :validators="{ 
+                            :validators="{
                                 onSubmit: ({ value }: any) => {
                                     if (!value) return 'Nomor WhatsApp wajib diisi';
                                     if (!/^(08|\+62)\d+$/.test(value)) return 'Format salah (harus diawali 08 atau +62, dan hanya angka)';
                                     return undefined;
-                                } 
+                                },
                             }"
                         />
                         <TanStackInput
@@ -457,6 +452,12 @@ onBeforeUnmount(() => {
                                 name="is_motor"
                                 label="Saya memiliki dan/atau menguasai sepeda motor dan siap menggunakannya saat pendaataan"
                             />
+                            <TanStackCheckbox
+                                v-if="values.jenis_kelamin === 'Perempuan'"
+                                :form="form"
+                                name="is_not_hamil"
+                                label="Saya sedang tidak dalam kondisi hamil"
+                            />
                         </div>
                     </div>
                 </section>
@@ -475,7 +476,12 @@ onBeforeUnmount(() => {
                                     <div class="space-y-2">
                                         <div class="flex items-center gap-1">
                                             <label class="text-sm font-medium">Upload KTP*</label>
-                                            <a :href="media + 'img/contoh/ktp.jpg'" target="_blank" class="text-xs text-cyan-600 underline-offset-2 hover:underline">(contoh)</a>
+                                            <a
+                                                :href="media + 'img/contoh/ktp.jpg'"
+                                                target="_blank"
+                                                class="text-xs text-cyan-600 underline-offset-2 hover:underline"
+                                                >(contoh)</a
+                                            >
                                         </div>
                                         <div class="relative">
                                             <input
@@ -524,7 +530,12 @@ onBeforeUnmount(() => {
                                     <div class="space-y-2">
                                         <div class="flex items-center gap-1">
                                             <label class="text-sm font-medium">Upload Tangkapan Layar Spesifikasi HP*</label>
-                                            <a :href="media + 'img/contoh/spek_hp.jpg'" target="_blank" class="text-xs text-cyan-600 underline-offset-2 hover:underline">(contoh)</a>
+                                            <a
+                                                :href="media + 'img/contoh/spek_hp.jpg'"
+                                                target="_blank"
+                                                class="text-xs text-cyan-600 underline-offset-2 hover:underline"
+                                                >(contoh)</a
+                                            >
                                         </div>
                                         <div class="relative">
                                             <input
@@ -573,7 +584,12 @@ onBeforeUnmount(() => {
                                     <div class="space-y-2">
                                         <div class="flex items-center gap-1">
                                             <label class="text-sm font-medium">Upload Bukti Follow IG BPS KSB*</label>
-                                            <a :href="media + 'img/contoh/ss_ig.jpg'" target="_blank" class="text-xs text-cyan-600 underline-offset-2 hover:underline">(contoh)</a>
+                                            <a
+                                                :href="media + 'img/contoh/ss_ig.jpg'"
+                                                target="_blank"
+                                                class="text-xs text-cyan-600 underline-offset-2 hover:underline"
+                                                >(contoh)</a
+                                            >
                                         </div>
                                         <div class="relative">
                                             <input
@@ -633,12 +649,13 @@ onBeforeUnmount(() => {
             <DialogHeader>
                 <DialogTitle>Konfirmasi Pendaftaran</DialogTitle>
                 <DialogDescription>
-                    Apakah Anda yakin ingin mengirim pendaftaran ini? Tolong pastikan lagi informasi yang diberikan telah sesuai, terutama nomor WhatsApp harus benar dan aktif.
+                    Apakah Anda yakin ingin mengirim pendaftaran ini? Tolong pastikan lagi informasi yang diberikan telah sesuai, terutama nomor
+                    WhatsApp harus benar dan aktif.
                 </DialogDescription>
             </DialogHeader>
             <DialogFooter class="flex flex-col gap-2 sm:flex-row sm:justify-end">
                 <Button variant="outline" @click="isConfirmDialogOpen = false">Batal</Button>
-                <Button class="bg-green-600 hover:bg-green-700 text-white" @click="performSubmission">Ya, Kirim Pendaftaran</Button>
+                <Button class="bg-green-600 text-white hover:bg-green-700" @click="performSubmission">Ya, Kirim Pendaftaran</Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>

@@ -43,6 +43,7 @@ class PublicRegistrationRequest extends FormRequest
             'pendidikan_terakhir' => ['required', Rule::in(['SLTP/Kebawah', 'SLTA', 'DI/DII/DII', 'DIV/S1/S2/S3'])],
             'pekerjaan' => ['required', 'string', 'max:120'],
             'is_not_asn' => ['required', 'boolean'],
+            'is_not_hamil' => ['required', 'boolean'],
             'is_motor' => ['required', 'boolean'],
             'nomor_whatsapp' => ['required', 'string', 'max:30', 'regex:/^(08|\+62)\d+$/'],
             'merk_hp' => ['required', 'string', 'max:255'],

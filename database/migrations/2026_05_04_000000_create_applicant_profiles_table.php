@@ -36,6 +36,7 @@ return new class extends Migration
             $table->boolean('is_domksb')->default(false);
             $table->boolean('is_motor')->default(false);
             $table->boolean('is_not_asn')->default(false);
+            $table->boolean('is_not_hamil')->default(false);
             $table->enum('status_sobat', ['Sudah', 'Belum'])->default('Belum');
             $table->enum('status_wawancara', ['Belum Wawancara', 'Sudah Wawancara'])->default('Belum Wawancara');
             $table->enum('status_kelulusan', ['Lulus', 'Belum Lulus'])->default('Belum Lulus');

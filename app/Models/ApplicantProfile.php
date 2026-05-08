@@ -33,6 +33,7 @@ class ApplicantProfile extends Model
         'pendidikan_terakhir',
         'pekerjaan',
         'is_not_asn',
+        'is_not_hamil',
         'is_motor',
         'nomor_whatsapp',
         'merk_hp',
