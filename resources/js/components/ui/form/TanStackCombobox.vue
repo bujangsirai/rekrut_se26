@@ -16,6 +16,7 @@ const props = defineProps<{
     options: any[]; // Can be string[] or {label: string, value: any}[]
     validators?: any;
     multiple?: boolean;
+    disabled?: boolean;
 }>();
 
 const open = ref(false);
@@ -53,6 +54,7 @@ const getLabelByValue = (val: any) => {
                                 variant="outline"
                                 role="combobox"
                                 :aria-expanded="open"
+                                :disabled="disabled"
                                 class="w-full justify-between font-normal cursor-pointer"
                             >
                                 <span v-if="!multiple && field.state.value" class="flex items-center gap-2 truncate">

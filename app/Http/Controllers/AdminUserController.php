@@ -73,15 +73,15 @@ class AdminUserController extends Controller
             ->with('success', 'User berhasil diperbarui.');
     }
 
-    public function destroy(User $user): RedirectResponse
+    public function destroy(Request $request, User $user): RedirectResponse
     {
-        if ((int) auth()->id() === (int) $user->id) {
+        if ($request->user()?->is($user)) {
             return redirect()
                 ->route('admin.users.index')
-                ->withErrors(['error' => 'Tidak bisa menghapus user yang sedang login.']);
+                ->with('error', 'Tidak bisa menghapus user yang sedang login.');
         }
 
-        $user->delete();
+        $user->deleteOrFail();
 
         return redirect()
             ->route('admin.users.index')

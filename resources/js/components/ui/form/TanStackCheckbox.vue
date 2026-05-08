@@ -9,6 +9,8 @@ const props = defineProps<{
     label: string;
     validators?: any;
 }>();
+
+defineEmits(['change']);
 </script>
 
 <template>
@@ -18,7 +20,10 @@ const props = defineProps<{
                 <Checkbox
                     :id="name"
                     :checked="field.state.value"
-                    @update:checked="(val: boolean) => field.handleChange(val)"
+                    @update:checked="(val: boolean) => {
+                        field.handleChange(val);
+                        $emit('change', val);
+                    }"
                 />
                 
                 <Label :for="name" class="cursor-pointer text-sm font-normal">

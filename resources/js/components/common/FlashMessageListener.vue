@@ -36,6 +36,13 @@ watch(flashInfo, (msg) => {
     }
 }, { immediate: true });
 
+// Eksekusi toast setiap kali ada validation errors dari Inertia
+watch(() => page.props.errors, (errors) => {
+    if (errors && Object.keys(errors).length > 0) {
+        toast.error('Mohon periksa kembali form Anda. Terdapat data yang tidak valid.');
+    }
+}, { deep: true });
+
 </script>
 
 <template>

@@ -47,16 +47,44 @@ class PublicRegistrationController extends Controller
     {
         $validated = $request->validated();
         $ktpPath = $request->file('ktp_file')->store('mitra/ktp', 'local');
-        unset($validated['ktp_file']);
+        $spekHpPath = $request->file('spek_hp_file')->store('mitra/spek_hp', 'local');
+        $followIgPath = $request->file('follow_ig_file')->store('mitra/follow_ig', 'local');
 
-        ApplicantProfile::query()->create([
-            ...$validated,
-            'url_ktp' => $ktpPath,
-            'kode_akses' => Str::uuid()->toString(),
-            'kode_akses_kedaluwarsa_pada' => now()->addMonths(3),
-            'status_wawancara' => 'Belum Wawancara',
-            'status_kelulusan' => 'Belum Lulus',
-        ]);
+        unset($validated['ktp_file'], $validated['spek_hp_file'], $validated['follow_ig_file']);
+
+        DB::transaction(function () use ($validated, $ktpPath, $spekHpPath, $followIgPath) {
+            ApplicantProfile::query()->create([
+                ...$validated,
+                'kode_akses' => Str::uuid()->toString(),
+                'kode_akses_kedaluwarsa_pada' => now()->addMonths(3),
+                'status_wawancara' => 'Belum Wawancara',
+                'status_kelulusan' => 'Belum Lulus',
+            ]);
+
+            DB::table('mitra_berkas')->insert([
+                [
+                    'nik' => $validated['nik'],
+                    'jenis_berkas' => 'ktp',
+                    'file_path' => $ktpPath,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                [
+                    'nik' => $validated['nik'],
+                    'jenis_berkas' => 'spek_hp',
+                    'file_path' => $spekHpPath,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                [
+                    'nik' => $validated['nik'],
+                    'jenis_berkas' => 'follow_ig',
+                    'file_path' => $followIgPath,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+            ]);
+        });
 
         return redirect()
             ->route('public.register.success')
@@ -93,7 +121,8 @@ class PublicRegistrationController extends Controller
         if (! $mitra) {
             return redirect()
                 ->back()
-                ->withErrors(['nik' => 'NIK yang anda masukkan belum terdaftar, silahkan cek kembali NIK anda atau mendaftar terlebih dahulu']);
+                ->withErrors(['nik' => 'NIK yang anda masukkan belum terdaftar, silahkan cek kembali NIK anda atau mendaftar terlebih dahulu'])
+                ->with('error', 'NIK tidak terdaftar.');
         }
 
         return redirect()

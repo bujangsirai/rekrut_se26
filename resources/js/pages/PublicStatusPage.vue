@@ -45,7 +45,8 @@ defineProps<{
                                         mitra.status_kelulusan === 'Lulus' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700',
                                     ]"
                                 >
-                                    {{ mitra.status_kelulusan }}
+                                    <!-- TODO {{ mitra.status_kelulusan }} -->
+                                    Silahkan Menunggu Tahapan Berikutnya
                                 </span>
                             </div>
                         </div>

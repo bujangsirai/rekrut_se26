@@ -5,6 +5,7 @@ import { createApp, Fragment, h } from 'vue';
 import FlashMessageListener from '@/components/common/FlashMessageListener.vue';
 import ScrollToTopButton from '@/components/common/ScrollToTopButton.vue';
 import { Toaster } from '@/components/ui/sonner';
+import { toast } from 'vue-sonner';
 import { autoSubscribePushForAuthenticatedUser, cleanupPushSubscriptionBinding } from '@/lib/push-auto-subscribe';
 import { markInstalled, setDeferredInstallPrompt, type BeforeInstallPromptEvent } from '@/lib/pwa-install';
 import { initializeTheme } from '@/lib/theme';
@@ -15,8 +16,6 @@ initializeTheme('light');
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
     resolve: (name) => resolvePage(name),
     setup({ el, App, props, plugin }) {
         createApp({

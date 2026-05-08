@@ -14,6 +14,7 @@ const props = defineProps<{
     validators?: any;
     spellcheck?: boolean;
     numberOnly?: boolean;
+    phoneOnly?: boolean;
     maxlength?: number;
 }>();
 
@@ -36,13 +37,16 @@ const showPassword = ref(false);
                         :model-value="field.state.value"
                         :spellcheck="spellcheck ?? false"
                         :maxlength="maxlength"
-                        :inputmode="numberOnly ? 'numeric' : undefined"
+                        :inputmode="numberOnly || phoneOnly ? 'numeric' : undefined"
                         @blur="field.handleBlur"
                         @keypress="
                             (e: KeyboardEvent) => {
                                 if (numberOnly) {
-                                    // Allow control keys like backspace, tab, etc.
                                     if (e.key.length === 1 && !/^[0-9]$/.test(e.key)) {
+                                        e.preventDefault();
+                                    }
+                                } else if (phoneOnly) {
+                                    if (e.key.length === 1 && !/^[0-9+]$/.test(e.key)) {
                                         e.preventDefault();
                                     }
                                 }
@@ -53,6 +57,11 @@ const showPassword = ref(false);
                                 let val = (e.target as HTMLInputElement).value;
                                 if (numberOnly) {
                                     val = val.replace(/\D/g, '');
+                                    (e.target as HTMLInputElement).value = val;
+                                } else if (phoneOnly) {
+                                    const hasPlus = val.startsWith('+');
+                                    val = val.replace(/\D/g, '');
+                                    if (hasPlus) val = '+' + val;
                                     (e.target as HTMLInputElement).value = val;
                                 }
                                 field.handleChange(val);

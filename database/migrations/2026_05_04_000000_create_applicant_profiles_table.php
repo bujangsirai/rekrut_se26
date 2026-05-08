@@ -16,7 +16,6 @@ return new class extends Migration
             $table->char('nik', 16)->unique();
             $table->string('nama_lengkap');
             $table->string('email');
-            $table->string('url_ktp')->nullable();
             $table->string('kode_akses', 64)->unique();
             $table->timestamp('kode_akses_kedaluwarsa_pada')->nullable();
             $table->timestamp('terakhir_diakses_pada')->nullable();
@@ -24,13 +23,19 @@ return new class extends Migration
             $table->string('kode_kec', 7);
             $table->string('kode_desa', 10);
             $table->text('alamat_lengkap');
+            $table->string('kode_kec_dom', 7)->nullable();
+            $table->string('kode_desa_dom', 10)->nullable();
             $table->date('tanggal_lahir');
             $table->string('tempat_lahir');
             $table->enum('status_perkawinan', ['Belum Kawin', 'Kawin', 'Cerai Hidup', 'Cerai Mati']);
             $table->enum('pendidikan_terakhir', ['SLTP/Kebawah', 'SLTA', 'DI/DII/DII', 'DIV/S1/S2/S3']);
             $table->string('pekerjaan', 120);
             $table->string('nomor_whatsapp', 30);
+            $table->string('merk_hp');
             $table->longText('riwayat_kegiatan_bps')->nullable();
+            $table->boolean('is_domksb')->default(false);
+            $table->boolean('is_motor')->default(false);
+            $table->boolean('is_not_asn')->default(false);
             $table->enum('status_sobat', ['Sudah', 'Belum'])->default('Belum');
             $table->enum('status_wawancara', ['Belum Wawancara', 'Sudah Wawancara'])->default('Belum Wawancara');
             $table->enum('status_kelulusan', ['Lulus', 'Belum Lulus'])->default('Belum Lulus');

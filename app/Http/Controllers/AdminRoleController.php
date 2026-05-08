@@ -58,19 +58,17 @@ class AdminRoleController extends Controller
         if ($role->name === 'Superadmin') {
             return redirect()
                 ->route('admin.roles')
-                ->withErrors(['error' => 'Role Superadmin tidak boleh dihapus.']);
+                ->with('error', 'Role Superadmin tidak boleh dihapus.');
         }
 
         $assignedUsersCount = $role->users()->count();
         if ($assignedUsersCount > 0) {
             return redirect()
                 ->route('admin.roles')
-                ->withErrors([
-                    'error' => "Role tidak bisa dihapus karena masih dipakai oleh {$assignedUsersCount} user.",
-                ]);
+                ->with('error', "Role tidak bisa dihapus karena masih dipakai oleh {$assignedUsersCount} user.");
         }
 
-        $role->delete();
+        $role->deleteOrFail();
 
         return redirect()
             ->route('admin.roles')
