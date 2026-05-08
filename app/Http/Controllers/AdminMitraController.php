@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AdminMitraStoreRequest;
 use App\Http\Requests\AdminMitraUpdateRequest;
 use App\Models\ApplicantProfile;
+use Carbon\Carbon;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -19,40 +22,37 @@ class AdminMitraController extends Controller
     {
         $mitra = ApplicantProfile::query()
             ->select([
-                'mitra.id',
-                'mitra.nik',
-                'mitra.url_ktp',
-                'mitra.kode_akses',
-                'mitra.nama_lengkap',
-                'mitra.email',
-                'mitra.jenis_kelamin',
-                'mitra.kode_kec',
-                'mitra.kode_desa',
-                'mitra.nomor_whatsapp',
-                'mitra.status_sobat',
-                'mitra.status_wawancara',
-                'mitra.status_kelulusan',
-                'mitra.tanggal_lahir',
-                'mitra.tempat_lahir',
-                'mitra.status_perkawinan',
-                'mitra.pendidikan_terakhir',
-                'mitra.pekerjaan',
-                'mitra.alamat_lengkap',
-                'mitra.riwayat_kegiatan_bps',
-                'mitra.created_at',
+                'mitra.*',
                 'mkd.nama_kec',
                 'mkd.nama_desa',
+                'mb_ktp.file_path as ktp_path',
+                'mb_spek.file_path as spek_hp_path',
+                'mb_ig.file_path as follow_ig_path',
             ])
             ->leftJoin('master_kecamatan_desa as mkd', function ($join) {
                 $join->on('mitra.kode_kec', '=', 'mkd.kode_kec')
-                     ->on('mitra.kode_desa', '=', 'mkd.kode_desa');
+                    ->on('mitra.kode_desa', '=', 'mkd.kode_desa');
             }, null, null)
+            ->leftJoin('mitra_berkas as mb_ktp', function ($join) {
+                $join->on('mitra.nik', '=', 'mb_ktp.nik')
+                    ->where('mb_ktp.jenis_berkas', '=', 'ktp');
+            })
+            ->leftJoin('mitra_berkas as mb_spek', function ($join) {
+                $join->on('mitra.nik', '=', 'mb_spek.nik')
+                    ->where('mb_spek.jenis_berkas', '=', 'spek_hp');
+            })
+            ->leftJoin('mitra_berkas as mb_ig', function ($join) {
+                $join->on('mitra.nik', '=', 'mb_ig.nik')
+                    ->where('mb_ig.jenis_berkas', '=', 'follow_ig');
+            })
             ->latest('mitra.id')
             ->get()
             ->map(static fn (object $item): array => [
                 'id' => $item->id,
                 'nik' => $item->nik,
-                'url_ktp' => $item->url_ktp ? \Illuminate\Support\Facades\Crypt::encryptString($item->url_ktp) : null,
+                'url_ktp' => $item->ktp_path ? Crypt::encryptString($item->ktp_path) : null,
+                'url_spek_hp' => $item->spek_hp_path ? Crypt::encryptString($item->spek_hp_path) : null,
+                'url_follow_ig' => $item->follow_ig_path ? Crypt::encryptString($item->follow_ig_path) : null,
                 'kode_akses' => $item->kode_akses,
                 'nama_lengkap' => $item->nama_lengkap,
                 'email' => $item->email,
@@ -65,15 +65,21 @@ class AdminMitraController extends Controller
                 'status_sobat' => $item->status_sobat,
                 'status_wawancara' => $item->status_wawancara,
                 'status_kelulusan' => $item->status_kelulusan,
-                // Pastikan Intelephense tidak protes karena mengira ini dipanggil dari stdClass
-                'tanggal_lahir' => \Carbon\Carbon::parse($item->tanggal_lahir)->format('Y-m-d'),
+                'tanggal_lahir' => Carbon::parse($item->tanggal_lahir)->format('Y-m-d'),
                 'tempat_lahir' => $item->tempat_lahir,
                 'status_perkawinan' => $item->status_perkawinan,
                 'pendidikan_terakhir' => $item->pendidikan_terakhir,
                 'pekerjaan' => $item->pekerjaan,
                 'alamat_lengkap' => $item->alamat_lengkap,
                 'riwayat_kegiatan_bps' => $item->riwayat_kegiatan_bps,
-                'created_at' => $item->created_at ? \Carbon\Carbon::parse($item->created_at)->toDateTimeString() : null,
+                'is_domksb' => (bool) $item->is_domksb,
+                'is_motor' => (bool) $item->is_motor,
+                'is_not_asn' => (bool) $item->is_not_asn,
+                'is_not_hamil' => (bool) $item->is_not_hamil,
+                'merk_hp' => $item->merk_hp,
+                'kode_kec_dom' => $item->kode_kec_dom,
+                'kode_desa_dom' => $item->kode_desa_dom,
+                'created_at' => $item->created_at ? Carbon::parse($item->created_at)->toDateTimeString() : null,
             ])
             ->values();
 
@@ -104,6 +110,87 @@ class AdminMitraController extends Controller
             'kecamatanOptions' => $kecamatanOptions,
             'desaOptions' => $desaOptions,
         ]);
+    }
+
+    public function export()
+    {
+        $mitra = ApplicantProfile::query()
+            ->select([
+                'mitra.*',
+                'mkd_ktp.nama_kec as nama_kec_ktp',
+                'mkd_ktp.nama_desa as nama_desa_ktp',
+                'mkd_dom.nama_kec as nama_kec_dom',
+                'mkd_dom.nama_desa as nama_desa_dom',
+            ])
+            ->leftJoin('master_kecamatan_desa as mkd_ktp', function ($join) {
+                $join->on('mitra.kode_kec', '=', 'mkd_ktp.kode_kec')
+                    ->on('mitra.kode_desa', '=', 'mkd_ktp.kode_desa');
+            })
+            ->leftJoin('master_kecamatan_desa as mkd_dom', function ($join) {
+                $join->on('mitra.kode_kec_dom', '=', 'mkd_dom.kode_kec')
+                    ->on('mitra.kode_desa_dom', '=', 'mkd_dom.kode_desa');
+            })
+            ->latest('mitra.id')
+            ->get();
+
+        $filename = 'data_mitra_'.date('Y-m-d_H-i-s').'.csv';
+        $headers = [
+            'Content-type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=$filename",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        $columns = [
+            'NIK', 'Nama Lengkap', 'Email', 'Jenis Kelamin',
+            'Kecamatan KTP', 'Desa KTP', 'Alamat KTP',
+            'Domisili KSB', 'Kecamatan Domisili', 'Desa Domisili',
+            'Tempat Lahir', 'Tanggal Lahir', 'Status Perkawinan',
+            'Pendidikan', 'Pekerjaan', 'Nomor WA', 'Merk HP',
+            'Bukan ASN', 'Tidak Hamil', 'Memiliki Motor',
+            'Status Sobat', 'Status Wawancara', 'Status Kelulusan',
+            'Riwayat Kegiatan BPS', 'Tanggal Daftar',
+        ];
+
+        $callback = function () use ($mitra, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($mitra as $item) {
+                fputcsv($file, [
+                    $item->nik,
+                    $item->nama_lengkap,
+                    $item->email,
+                    $item->jenis_kelamin,
+                    $item->nama_kec_ktp,
+                    $item->nama_desa_ktp,
+                    $item->alamat_lengkap,
+                    $item->is_domksb ? 'Ya' : 'Tidak',
+                    $item->nama_kec_dom ?? '-',
+                    $item->nama_desa_dom ?? '-',
+                    $item->tempat_lahir,
+                    $item->tanggal_lahir?->format('Y-m-d'),
+                    $item->status_perkawinan,
+                    $item->pendidikan_terakhir,
+                    $item->pekerjaan,
+                    $item->nomor_whatsapp,
+                    $item->merk_hp,
+                    $item->is_not_asn ? 'Ya' : 'Tidak',
+                    $item->is_not_hamil ? 'Ya' : 'Tidak',
+                    $item->is_motor ? 'Ya' : 'Tidak',
+                    $item->status_sobat,
+                    $item->status_wawancara,
+                    $item->status_kelulusan,
+                    $item->riwayat_kegiatan_bps,
+                    $item->created_at?->toDateTimeString(),
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     public function store(AdminMitraStoreRequest $request): RedirectResponse
@@ -140,8 +227,8 @@ class AdminMitraController extends Controller
     public function file($payload)
     {
         try {
-            $path = \Illuminate\Support\Facades\Crypt::decryptString($payload);
-        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            $path = Crypt::decryptString($payload);
+        } catch (DecryptException $e) {
             abort(404, 'Link file tidak valid.');
         }
 

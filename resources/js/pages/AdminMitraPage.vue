@@ -7,7 +7,9 @@ import LayoutAdmin from '@/components/layouts/LayoutAdmin.vue';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { Head } from '@inertiajs/vue3';
+import { Download } from 'lucide-vue-next';
 import { ref } from 'vue';
+import mitraRoute from '@/routes/admin/mitra';
 
 defineProps<{
     mitra: MitraItem[];
@@ -51,7 +53,6 @@ const tableColumns = getMitraColumns({
 
     <div class="mx-auto max-w-6xl space-y-5">
         <header class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p class="text-xs font-semibold tracking-wider text-slate-500 uppercase"></p>
             <h1 class="text-2xl font-bold text-slate-900">Kelola Mitra</h1>
             <p class="mt-1 text-sm text-slate-600">CRUD data mitra calon petugas untuk proses wawancara dan kelulusan.</p>
         </header>
@@ -60,9 +61,17 @@ const tableColumns = getMitraColumns({
             <DataTable
                 :data="mitra"
                 :columns="tableColumns"
-                search-placeholder="Cari nama mitra..."
-                search-column="nama_lengkap"
+                search-placeholder="Cari nama atau NIK..."
+                :search-fields="['nama_lengkap', 'nik']"
             >
+                <template #actions>
+                    <a :href="mitraRoute.export.url()" target="_blank">
+                        <Button class="cursor-pointer">
+                            <Download class="mr-2 h-4 w-4" />
+                            Download Excel
+                        </Button>
+                    </a>
+                </template>
                 <template #expanded-row="{ original }">
                     <MitraExpandedRow :original="original" />
                 </template>

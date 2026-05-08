@@ -8,6 +8,8 @@ export interface MitraItem {
     id: number;
     nik: string;
     url_ktp: string | null;
+    url_spek_hp: string | null;
+    url_follow_ig: string | null;
     kode_akses: string;
     nama_lengkap: string;
     email: string;
@@ -27,6 +29,13 @@ export interface MitraItem {
     pekerjaan: string;
     alamat_lengkap: string;
     riwayat_kegiatan_bps: string | null;
+    is_domksb: boolean;
+    is_motor: boolean;
+    is_not_asn: boolean;
+    is_not_hamil: boolean;
+    merk_hp: string;
+    kode_kec_dom: string | null;
+    kode_desa_dom: string | null;
     created_at: string | null;
 }
 

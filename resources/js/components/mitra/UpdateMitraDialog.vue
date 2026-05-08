@@ -65,12 +65,19 @@ const form = useForm({
         kode_kec: '',
         kode_desa: '',
         alamat_lengkap: '',
+        is_domksb: false,
+        kode_kec_dom: '',
+        kode_desa_dom: '',
         tanggal_lahir: '',
         tempat_lahir: '',
         status_perkawinan: 'Belum Kawin',
         pendidikan_terakhir: 'SLTA',
         pekerjaan: '',
+        is_not_asn: false,
+        is_not_hamil: true,
+        is_motor: false,
         nomor_whatsapp: '',
+        merk_hp: '',
         riwayat_kegiatan_bps: '',
         status_sobat: 'Belum',
         status_wawancara: 'Belum Wawancara',
@@ -115,17 +122,40 @@ const desaSelectOptions = computed(() => {
         }));
 });
 
+const desaDomSelectOptions = computed(() => {
+    if (!values.value.kode_kec_dom) {
+        return [];
+    }
+
+    return props.desaOptions
+        .filter((item) => item.kode_desa.slice(0, 7) === values.value.kode_kec_dom)
+        .map((item) => ({
+            label: item.nama_desa,
+            value: item.kode_desa,
+        }));
+});
+
 watch(
     () => values.value.kode_kec,
     (kodeKec, oldVal) => {
-        // Hanya reset desa jika ini benar-benar perubahan oleh user saat edit
-        // bukan inisialisasi awal saat modal dibuka
         if (!kodeKec || !oldVal) {
             return;
         }
 
         const firstDesa = props.desaOptions.find((item) => item.kode_desa.slice(0, 7) === kodeKec)?.kode_desa ?? '';
         form.setFieldValue('kode_desa', firstDesa);
+    },
+);
+
+watch(
+    () => values.value.kode_kec_dom,
+    (kodeKecDom, oldVal) => {
+        if (!kodeKecDom || !oldVal) {
+            return;
+        }
+
+        const firstDesa = props.desaOptions.find((item) => item.kode_desa.slice(0, 7) === kodeKecDom)?.kode_desa ?? '';
+        form.setFieldValue('kode_desa_dom', firstDesa);
     },
 );
 
@@ -143,12 +173,19 @@ watch(
         form.setFieldValue('kode_kec', props.mitra.kode_kec);
         form.setFieldValue('kode_desa', props.mitra.kode_desa);
         form.setFieldValue('alamat_lengkap', props.mitra.alamat_lengkap);
+        form.setFieldValue('is_domksb', props.mitra.is_domksb);
+        form.setFieldValue('kode_kec_dom', props.mitra.kode_kec_dom ?? '');
+        form.setFieldValue('kode_desa_dom', props.mitra.kode_desa_dom ?? '');
         form.setFieldValue('tanggal_lahir', props.mitra.tanggal_lahir);
         form.setFieldValue('tempat_lahir', props.mitra.tempat_lahir);
         form.setFieldValue('status_perkawinan', props.mitra.status_perkawinan);
         form.setFieldValue('pendidikan_terakhir', props.mitra.pendidikan_terakhir);
         form.setFieldValue('pekerjaan', props.mitra.pekerjaan);
+        form.setFieldValue('is_not_asn', props.mitra.is_not_asn);
+        form.setFieldValue('is_not_hamil', props.mitra.is_not_hamil);
+        form.setFieldValue('is_motor', props.mitra.is_motor);
         form.setFieldValue('nomor_whatsapp', props.mitra.nomor_whatsapp);
+        form.setFieldValue('merk_hp', props.mitra.merk_hp);
         form.setFieldValue('riwayat_kegiatan_bps', props.mitra.riwayat_kegiatan_bps ?? '');
         form.setFieldValue('status_sobat', props.mitra.status_sobat);
         form.setFieldValue('status_wawancara', props.mitra.status_wawancara);
@@ -159,7 +196,7 @@ watch(
 
 <template>
     <Dialog :open="open" @update:open="(val) => emit('update:open', val)">
-        <DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[760px]">
+        <DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-[800px]">
             <DialogHeader>
                 <DialogTitle>Ubah Mitra</DialogTitle>
                 <DialogDescription>Perbarui data mitra sesuai kebutuhan wawancara.</DialogDescription>
@@ -170,8 +207,18 @@ watch(
                     <TanStackInput :form="form" name="nik" label="NIK (16 Digit)*" placeholder="Contoh: 5207xxxxxxxxxxxx" :number-only="true" :maxlength="16" />
                     <TanStackInput :form="form" name="nama_lengkap" label="Nama Lengkap*" placeholder="Masukkan nama lengkap sesuai KTP" />
 
-                    <TanStackCombobox :form="form" name="kode_kec" label="Asal Kecamatan*" :options="kecamatanSelectOptions" placeholder="Cari kecamatan..." />
-                    <TanStackCombobox :form="form" name="kode_desa" label="Asal Desa*" :options="desaSelectOptions" placeholder="Cari desa..." />
+                    <TanStackCombobox :form="form" name="kode_kec" label="Asal Kecamatan (KTP)*" :options="kecamatanSelectOptions" placeholder="Cari kecamatan..." />
+                    <TanStackCombobox :form="form" name="kode_desa" label="Asal Desa (KTP)*" :options="desaSelectOptions" placeholder="Cari desa..." />
+                    
+                    <div class="md:col-span-2">
+                        <TanStackCheckbox :form="form" name="is_domksb" label="Domisili saat ini di Sumbawa Barat" />
+                    </div>
+
+                    <template v-if="values.is_domksb">
+                        <TanStackCombobox :form="form" name="kode_kec_dom" label="Kecamatan Domisili*" :options="kecamatanSelectOptions" placeholder="Cari kecamatan..." />
+                        <TanStackCombobox :form="form" name="kode_desa_dom" label="Desa Domisili*" :options="desaDomSelectOptions" placeholder="Cari desa..." />
+                    </template>
+
                     <TanStackInput :form="form" name="tempat_lahir" label="Tempat Lahir*" placeholder="Contoh: Sumbawa Barat" />
                     <TanStackDatePicker :form="form" name="tanggal_lahir" label="Tanggal Lahir*" />
                     
@@ -182,10 +229,20 @@ watch(
                     <TanStackInput :form="form" name="pekerjaan" label="Pekerjaan*" placeholder="Contoh: Wiraswasta / Pegawai Swasta" />
                     <TanStackInput :form="form" name="nomor_whatsapp" label="Nomor WhatsApp*" placeholder="Contoh: 081234567890" />
                     <TanStackInput :form="form" name="email" type="email" label="Alamat Email*" placeholder="Contoh: nama@email.com" />
-                    <TanStackInput :form="form" name="alamat_lengkap" label="Alamat Lengkap*" placeholder="Masukkan alamat domisili saat ini" />
+                    <TanStackInput :form="form" name="merk_hp" label="Merek Handphone*" placeholder="Contoh: Samsung Galaxy A54" />
+                    
+                    <div class="md:col-span-2">
+                        <TanStackInput :form="form" name="alamat_lengkap" label="Alamat Lengkap*" placeholder="Masukkan alamat domisili saat ini" />
+                    </div>
 
                     <div class="md:col-span-2">
                         <TanStackTextarea :form="form" name="riwayat_kegiatan_bps" label="Riwayat Kegiatan BPS" placeholder="Sebutkan kegiatan BPS yang pernah diikuti, dipisahkan dengan tanda koma" :rows="3" />
+                    </div>
+
+                    <div class="flex flex-col gap-2 md:col-span-2">
+                        <TanStackCheckbox :form="form" name="is_not_asn" label="Bukan Aparatur Sipil Negara/TNI/Polri" />
+                        <TanStackCheckbox v-if="values.jenis_kelamin === 'Perempuan'" :form="form" name="is_not_hamil" label="Sedang tidak dalam kondisi hamil" />
+                        <TanStackCheckbox :form="form" name="is_motor" label="Memiliki dan/atau menguasai sepeda motor" />
                     </div>
 
                     <div class="col-span-full mt-2 mb-1 border-b border-slate-200"></div>
