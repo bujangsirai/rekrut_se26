@@ -17,15 +17,19 @@ defineEmits(['change']);
     <props.form.Field :name="name" :validators="validators">
         <template #default="{ field }">
             <div class="flex items-center space-x-2">
-                <Checkbox
+                <input
+                    type="checkbox"
                     :id="name"
                     :checked="field.state.value"
-                    @update:checked="(val: boolean) => {
+                    @change="(e: any) => {
+                        const val = e.target.checked;
+                        console.log(`Native Checkbox ${name} changed to:`, val);
                         field.handleChange(val);
-                        $emit('change', val);
+                        form.setFieldValue(name, val);
                     }"
+                    class="h-4 w-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500"
                 />
-                
+
                 <Label :for="name" class="cursor-pointer text-sm font-normal">
                     {{ label }}
                 </Label>

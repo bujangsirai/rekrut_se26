@@ -52,6 +52,10 @@ class ApplicantProfile extends Model
             'tanggal_lahir' => 'date',
             'kode_akses_kedaluwarsa_pada' => 'datetime',
             'terakhir_diakses_pada' => 'datetime',
+            'is_domksb' => 'boolean',
+            'is_not_asn' => 'boolean',
+            'is_not_hamil' => 'boolean',
+            'is_motor' => 'boolean',
         ];
     }
 }

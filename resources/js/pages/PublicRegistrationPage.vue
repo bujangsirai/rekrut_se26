@@ -44,7 +44,7 @@ const form = useForm({
         kode_kec: firstKecamatanCode,
         kode_desa: firstDesaCode,
         alamat_lengkap: '',
-        is_domksb: true,
+        is_domksb: false,
         kode_kec_dom: firstKecamatanCode,
         kode_desa_dom: firstDesaCode,
         tanggal_lahir: '',
@@ -54,7 +54,7 @@ const form = useForm({
         pekerjaan: '',
         is_not_asn: false,
         is_not_hamil: true,
-        is_motor: true,
+        is_motor: false,
         nomor_whatsapp: '',
         merk_hp: '',
         riwayat_kegiatan_bps: '',
@@ -71,7 +71,8 @@ const isConfirmDialogOpen = ref(false);
 
 const performSubmission = () => {
     isConfirmDialogOpen.value = false;
-    const value = form.state.values;
+    const value = values.value;
+    console.log('SENDING DATA:', { ...value });
 
     const payload = new FormData();
     payload.append('nik', value.nik);
@@ -144,6 +145,7 @@ watch(
 
 const handleFormSubmit = async (e: Event) => {
     e.preventDefault();
+    console.log('FORM DATA:', { ...values.value });
     await form.handleSubmit();
 
     // Check for client-side validation errors
