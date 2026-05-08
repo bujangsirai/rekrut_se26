@@ -52,6 +52,9 @@ jobs:
           port: ${{ secrets.FTP_PORT }}
           server-dir: ${{ secrets.FTP_SERVER_DIR }}
           exclude: |
+            .git/**
+            .git*
+            **/.git/**
             **/.git*
             **/.github/**
             **/node_modules/**
