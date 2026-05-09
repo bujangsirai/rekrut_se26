@@ -42,15 +42,15 @@ class AdminMitraController extends Controller
             ->leftJoin('mitra_berkas as mb_ktp', function ($join) {
                 $join->on('mitra.nik', '=', 'mb_ktp.nik')
                     ->where('mb_ktp.jenis_berkas', '=', 'ktp');
-            })
+            }, null, null)
             ->leftJoin('mitra_berkas as mb_spek', function ($join) {
                 $join->on('mitra.nik', '=', 'mb_spek.nik')
                     ->where('mb_spek.jenis_berkas', '=', 'spek_hp');
-            })
+            }, null, null)
             ->leftJoin('mitra_berkas as mb_ig', function ($join) {
                 $join->on('mitra.nik', '=', 'mb_ig.nik')
                     ->where('mb_ig.jenis_berkas', '=', 'follow_ig');
-            })
+            }, null, null)
             ->latest('mitra.id')
             ->get()
             ->map(static fn (object $item): array => [
@@ -131,11 +131,11 @@ class AdminMitraController extends Controller
             ->leftJoin('master_kecamatan_desa as mkd_ktp', function ($join) {
                 $join->on('mitra.kode_kec', '=', 'mkd_ktp.kode_kec')
                     ->on('mitra.kode_desa', '=', 'mkd_ktp.kode_desa');
-            })
+            }, null, null)
             ->leftJoin('master_kecamatan_desa as mkd_dom', function ($join) {
                 $join->on('mitra.kode_kec_dom', '=', 'mkd_dom.kode_kec')
                     ->on('mitra.kode_desa_dom', '=', 'mkd_dom.kode_desa');
-            })
+            }, null, null)
             ->latest('mitra.id')
             ->get();
 
@@ -230,7 +230,7 @@ class AdminMitraController extends Controller
             ->with('success', 'Data mitra berhasil dihapus.');
     }
 
-    public function file($payload)
+    public function file(string $payload)
     {
         try {
             $path = Crypt::decryptString($payload);
@@ -242,6 +242,6 @@ class AdminMitraController extends Controller
             abort(404, 'File tidak ditemukan.');
         }
 
-        return Storage::disk('local')->response($path);
+        return response()->file(Storage::disk('local')->path($path));
     }
 }
