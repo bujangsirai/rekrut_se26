@@ -13,9 +13,16 @@ import {
     getSortedRowModel,
     useVueTable,
 } from '@tanstack/vue-table';
-import { ArrowDown, ArrowUp, ChevronsUpDown, Search } from 'lucide-vue-next';
+import { ArrowDown, ArrowUp, ChevronsUpDown, ListFilter, Search } from 'lucide-vue-next';
 import { computed, ref, useSlots } from 'vue';
 import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import {
     Table,
     TableBody,
@@ -25,6 +32,18 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import DataTablePagination from './DataTablePagination.vue';
+
+type ToolbarFilterOption = {
+    label: string;
+    value: string;
+};
+
+type ToolbarFilter = {
+    key: string;
+    label: string;
+    options: ToolbarFilterOption[];
+    placeholder?: string;
+};
 
 const props = withDefaults(
     defineProps<{
@@ -36,12 +55,18 @@ const props = withDefaults(
         /** Search banyak field dari row.original sekaligus */
         searchFields?: string[];
         pageSize?: number;
+        singleExpandedRow?: boolean;
+        toolbarFilters?: ToolbarFilter[];
+        showRowAggregate?: boolean;
     }>(),
     {
         searchPlaceholder: 'Cari...',
         searchColumn: undefined,
         searchFields: undefined,
         pageSize: 10,
+        singleExpandedRow: false,
+        toolbarFilters: undefined,
+        showRowAggregate: false,
     },
 );
 
@@ -53,6 +78,48 @@ const sorting = ref<SortingState>([]);
 const columnFilters = ref<ColumnFiltersState>([]);
 const expanded = ref<ExpandedState>({});
 const globalFilter = ref('');
+const selectedToolbarFilters = ref<Record<string, string>>({});
+const hasToolbarFilters = computed(() => (props.toolbarFilters?.length ?? 0) > 0);
+
+const filteredData = computed(() => {
+    if (!hasToolbarFilters.value) {
+        return props.data;
+    }
+
+    return props.data.filter((item) => {
+        const row = item as Record<string, unknown>;
+
+        return (props.toolbarFilters ?? []).every((filterConfig) => {
+            const selected = selectedToolbarFilters.value[filterConfig.key] ?? '';
+            if (!selected) {
+                return true;
+            }
+
+            if (selected === '__NULL__') {
+                return row[filterConfig.key] == null || String(row[filterConfig.key]).trim() === '';
+            }
+
+            return String(row[filterConfig.key] ?? '') === selected;
+        });
+    });
+});
+
+function normalizeExpandedState(next: ExpandedState, prev: ExpandedState): ExpandedState {
+    if (!props.singleExpandedRow || next === true || typeof next !== 'object') {
+        return next;
+    }
+
+    const expandedKeys = Object.keys(next).filter((key) => next[key]);
+    if (expandedKeys.length <= 1) {
+        return next;
+    }
+
+    const previousExpanded = prev !== true && typeof prev === 'object' ? prev : {};
+    const newlyOpenedKey = expandedKeys.find((key) => !previousExpanded[key]);
+    const activeKey = newlyOpenedKey ?? expandedKeys[expandedKeys.length - 1];
+
+    return { [activeKey]: true };
+}
 
 // Custom filter function untuk multi-field search
 const multiFieldFilterFn: FilterFn<TData> = (row, _columnId, filterValue: string) => {
@@ -71,7 +138,7 @@ const multiFieldFilterFn: FilterFn<TData> = (row, _columnId, filterValue: string
 
 const table = useVueTable({
     get data() {
-        return props.data;
+        return filteredData.value;
     },
     get columns() {
         return props.columns;
@@ -97,7 +164,9 @@ const table = useVueTable({
             typeof updater === 'function' ? updater(globalFilter.value) : updater;
     },
     onExpandedChange: (updater) => {
-        expanded.value = typeof updater === 'function' ? updater(expanded.value) : updater;
+        const nextExpanded =
+            typeof updater === 'function' ? updater(expanded.value) : updater;
+        expanded.value = normalizeExpandedState(nextExpanded, expanded.value);
     },
     state: {
         get sorting() {
@@ -144,26 +213,74 @@ const searchValue = computed(() =>
 );
 
 const showSearch = computed(() => isMultiField.value || !!activeSearchColumn.value);
+const filteredRowsCount = computed(() => table.getFilteredRowModel().rows.length);
+const totalRowsCount = computed(() => props.data.length);
+
+function onToolbarFilterChange(key: string, value: string): void {
+    selectedToolbarFilters.value = {
+        ...selectedToolbarFilters.value,
+        [key]: value,
+    };
+}
 </script>
 
 <template>
     <div class="space-y-3">
         <!-- Search & Actions -->
-        <div v-if="showSearch || $slots.actions" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div
-                v-if="showSearch"
-                class="flex w-full max-w-sm items-center gap-2 rounded-lg border border-input bg-background px-3 h-9 shadow-sm"
-            >
-                <Search class="h-4 w-4 shrink-0 text-muted-foreground" />
-                <Input
-                    :model-value="searchValue"
-                    type="text"
-                    :placeholder="searchPlaceholder"
-                    class="border-0 bg-transparent p-0 h-full text-xs sm:text-sm shadow-none focus-visible:ring-0"
-                    @update:model-value="onSearchInput(String($event))"
-                />
+        <div v-if="showSearch || hasToolbarFilters || $slots.actions" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                <div
+                    v-if="showSearch"
+                    class="flex w-full max-w-sm items-center gap-2 rounded-lg border border-input bg-background h-9 px-3 shadow-sm"
+                >
+                    <Search class="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <Input
+                        :model-value="searchValue"
+                        type="text"
+                        :placeholder="searchPlaceholder"
+                        class="border-0 bg-transparent h-full p-0 text-xs shadow-none focus-visible:ring-0 sm:text-sm"
+                        @update:model-value="onSearchInput(String($event))"
+                    />
+                </div>
+                <div v-if="hasToolbarFilters" class="flex flex-wrap items-center gap-2">
+                    <div
+                        v-for="filterConfig in (toolbarFilters ?? [])"
+                        :key="filterConfig.key"
+                        class="flex h-9 items-center rounded-lg border border-input bg-background px-2 shadow-sm"
+                    >
+                        <Select
+                            :model-value="selectedToolbarFilters[filterConfig.key] || '__ALL__'"
+                            @update:model-value="onToolbarFilterChange(filterConfig.key, String($event) === '__ALL__' ? '' : String($event ?? ''))"
+                        >
+                            <SelectTrigger class="h-full w-[240px] cursor-pointer border-0 bg-transparent px-1 py-0 text-xs shadow-none focus-visible:ring-0 sm:text-sm">
+                                <span class="flex items-center gap-2">
+                                    <ListFilter class="h-4 w-4 shrink-0 text-muted-foreground" />
+                                    <SelectValue :placeholder="filterConfig.placeholder ?? `Semua ${filterConfig.label}`" />
+                                </span>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="__ALL__">
+                                    {{ filterConfig.placeholder ?? `Semua ${filterConfig.label}` }}
+                                </SelectItem>
+                                <SelectItem
+                                    v-for="option in filterConfig.options"
+                                    :key="`${filterConfig.key}-${option.value}`"
+                                    :value="option.value"
+                                >
+                                    {{ option.label }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
             </div>
-            <div v-if="$slots.actions" class="flex items-center gap-2">
+            <div v-if="showRowAggregate || $slots.actions" class="flex items-center gap-2">
+                <div
+                    v-if="showRowAggregate"
+                    class="inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-lg border border-input bg-background px-3 text-xs font-medium leading-none text-muted-foreground shadow-sm sm:text-sm"
+                >
+                    {{ filteredRowsCount }} / {{ totalRowsCount }} data
+                </div>
                 <slot name="actions" />
             </div>
         </div>

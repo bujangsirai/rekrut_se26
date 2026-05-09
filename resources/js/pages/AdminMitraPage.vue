@@ -8,10 +8,10 @@ import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { Head } from '@inertiajs/vue3';
 import { Download } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import mitraRoute from '@/routes/admin/mitra';
 
-defineProps<{
+const props = defineProps<{
     mitra: MitraItem[];
     kecamatanOptions: Array<{
         kode_kec: string;
@@ -46,6 +46,18 @@ const tableColumns = getMitraColumns({
     onEdit: handleEditMitra,
     onDelete: handleDeleteMitra,
 });
+
+const domisiliKecamatanFilters = computed(() => [
+    {
+        key: 'kode_kec_dom',
+        label: 'Kecamatan Domisili',
+        placeholder: 'Semua Domisili',
+        options: props.kecamatanOptions.map((item) => ({
+            value: item.kode_kec,
+            label: `${item.kode_kec} - ${item.nama_kec}`,
+        })),
+    },
+]);
 </script>
 
 <template>
@@ -63,6 +75,9 @@ const tableColumns = getMitraColumns({
                 :columns="tableColumns"
                 search-placeholder="Cari nama atau NIK..."
                 :search-fields="['nama_lengkap', 'nik']"
+                :toolbar-filters="domisiliKecamatanFilters"
+                show-row-aggregate
+                single-expanded-row
             >
                 <template #actions>
                     <a :href="mitraRoute.export.url()" target="_blank">
