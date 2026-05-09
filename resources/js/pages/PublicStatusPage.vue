@@ -1,20 +1,53 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 defineOptions({
     // @ts-ignore
     layout: null,
 });
 
-defineProps<{
+const props = defineProps<{
     mitra: {
         nik: string;
         nama_lengkap: string;
         posisi_dilamar: string;
+        status_sobat: 'Sudah' | 'Belum';
+        status_wawancara: 'Belum Wawancara' | 'Sudah Wawancara';
         status_kelulusan: string;
         [key: string]: any;
     };
 }>();
+const mitraRegistrationUrl = 'https://mitra.bps.go.id';
+const adminWaUrl = 'https://wa.me/6282144406055';
+const isBelumSobat = computed(() => props.mitra.status_sobat === 'Belum');
+
+const publicStatusContent = computed(() => {
+    if (props.mitra.status_sobat === 'Belum') {
+        return {
+            badge: 'Belum terdaftar di mitra.bps.go.id',
+            detail: 'Silahkan lanjutkan pendaftaran, jika merasa sudah mendaftar namun status di halaman ini belum berubah, silahkan hubungi admin',
+        };
+    }
+
+    if (props.mitra.status_sobat === 'Sudah' && props.mitra.status_wawancara === 'Belum Wawancara') {
+        return {
+            badge: 'Menunggu Tahap Berikutnya',
+            detail: 'Silahkan tunggu tahap berikutnya ya',
+        };
+    }
+
+    return {
+        badge: 'Status Diproses',
+        detail: 'Silahkan menunggu tahapan berikutnya',
+    };
+});
+
+const publicStatusClass = computed(() => {
+    return props.mitra.status_sobat === 'Belum'
+        ? 'bg-red-100 text-red-800'
+        : 'bg-cyan-100 text-cyan-800';
+});
 </script>
 
 <template>
@@ -41,13 +74,27 @@ defineProps<{
                                 <span class="block text-xs font-semibold tracking-wider text-slate-500 uppercase">Status Sekarang</span>
                                 <span
                                     :class="[
-                                        'inline-flex items-center rounded-full px-4 py-1.5 text-sm font-bold tracking-wide uppercase',
-                                        mitra.status_kelulusan === 'Lulus' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700',
+                                        'inline-flex items-center rounded-full px-4 py-1.5 text-center text-sm font-semibold',
+                                        publicStatusClass,
                                     ]"
                                 >
-                                    <!-- TODO {{ mitra.status_kelulusan }} -->
-                                    Silahkan Menunggu Tahapan Berikutnya
+                                    {{ publicStatusContent.badge }}
                                 </span>
+                                <p v-if="isBelumSobat" class="mt-2 text-sm leading-relaxed text-slate-600">
+                                    Silahkan lanjutkan pendaftaran di
+                                    <a
+                                        :href="mitraRegistrationUrl"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="font-semibold text-cyan-700 underline decoration-cyan-300 underline-offset-2 hover:text-cyan-800"
+                                    >
+                                        mitra.bps.go.id
+                                    </a>
+                                    , jika merasa sudah mendaftar namun status di halaman ini belum berubah, silahkan hubungi WA admin
+                                </p>
+                                <p v-else class="mt-2 text-sm leading-relaxed text-slate-600">
+                                    {{ publicStatusContent.detail }}
+                                </p>
                             </div>
                         </div>
 
@@ -59,6 +106,17 @@ defineProps<{
                                 Kembali ke Halaman Utama
                             </Link>
                         </div>
+                        <p class="mt-3 text-xs text-slate-600">
+                            Punya pertanyaan? silahakn hubungi WA admin 0821 4440 6055 atau
+                            <a
+                                :href="adminWaUrl"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="font-semibold text-cyan-700 underline decoration-cyan-300 underline-offset-2 hover:text-cyan-800"
+                            >
+                                klik disini
+                            </a>
+                        </p>
                     </div>
                 </section>
             </div>
