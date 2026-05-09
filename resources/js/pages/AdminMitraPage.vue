@@ -6,7 +6,7 @@ import UpdateMitraDialog from '@/components/mitra/UpdateMitraDialog.vue';
 import LayoutAdmin from '@/components/layouts/LayoutAdmin.vue';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { Download } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import mitraRoute from '@/routes/admin/mitra';
@@ -31,6 +31,87 @@ defineOptions({
 const isUpdateModalOpen = ref(false);
 const isDeleteModalOpen = ref(false);
 const selectedMitra = ref<MitraItem | null>(null);
+const sobatUpdatingIds = ref<number[]>([]);
+const mitraKepkaUpdatingIds = ref<number[]>([]);
+
+function buildUpdatePayload(item: MitraItem, statusSobat: MitraItem['status_sobat']) {
+    return {
+        nik: item.nik,
+        nama_lengkap: item.nama_lengkap,
+        email: item.email,
+        jenis_kelamin: item.jenis_kelamin,
+        kode_kec: item.kode_kec,
+        kode_desa: item.kode_desa,
+        alamat_lengkap: item.alamat_lengkap,
+        tanggal_lahir: item.tanggal_lahir,
+        tempat_lahir: item.tempat_lahir,
+        status_perkawinan: item.status_perkawinan,
+        pendidikan_terakhir: item.pendidikan_terakhir,
+        pekerjaan: item.pekerjaan,
+        nomor_whatsapp: item.nomor_whatsapp,
+        riwayat_kegiatan_bps: item.riwayat_kegiatan_bps,
+        is_domksb: item.is_domksb,
+        is_motor: item.is_motor,
+        is_not_asn: item.is_not_asn,
+        is_not_hamil: item.is_not_hamil,
+        merk_hp: item.merk_hp,
+        kode_kec_dom: item.kode_kec_dom,
+        kode_desa_dom: item.kode_desa_dom,
+        status_sobat: statusSobat,
+        is_mitrakepka: item.is_mitrakepka,
+        status_wawancara: item.status_wawancara,
+        status_kelulusan: item.status_kelulusan,
+    };
+}
+
+function buildMitraKepkaUpdatePayload(item: MitraItem, isMitraKepka: boolean) {
+    return {
+        ...buildUpdatePayload(item, item.status_sobat),
+        is_mitrakepka: isMitraKepka,
+    };
+}
+
+function isSobatUpdating(mitraId: number): boolean {
+    return sobatUpdatingIds.value.includes(mitraId);
+}
+
+function isMitraKepkaUpdating(mitraId: number): boolean {
+    return mitraKepkaUpdatingIds.value.includes(mitraId);
+}
+
+function handleChangeSobat(item: MitraItem, statusSobat: MitraItem['status_sobat']): void {
+    if (item.status_sobat === statusSobat || isSobatUpdating(item.id)) {
+        return;
+    }
+
+    sobatUpdatingIds.value.push(item.id);
+
+    router.put(mitraRoute.update(item.id).url, buildUpdatePayload(item, statusSobat), {
+        preserveScroll: true,
+        preserveState: true,
+        only: ['mitra'],
+        onFinish: () => {
+            sobatUpdatingIds.value = sobatUpdatingIds.value.filter((id) => id !== item.id);
+        },
+    });
+}
+
+function handleChangeMitraKepka(item: MitraItem, isMitraKepka: boolean): void {
+    if (item.is_mitrakepka === isMitraKepka || isMitraKepkaUpdating(item.id)) {
+        return;
+    }
+
+    mitraKepkaUpdatingIds.value.push(item.id);
+
+    router.put(mitraRoute.update(item.id).url, buildMitraKepkaUpdatePayload(item, isMitraKepka), {
+        preserveScroll: true,
+        preserveState: true,
+        only: ['mitra'],
+        onFinish: () => {
+            mitraKepkaUpdatingIds.value = mitraKepkaUpdatingIds.value.filter((id) => id !== item.id);
+        },
+    });
+}
 
 function handleEditMitra(item: MitraItem): void {
     selectedMitra.value = item;
@@ -45,6 +126,10 @@ function handleDeleteMitra(item: MitraItem): void {
 const tableColumns = getMitraColumns({
     onEdit: handleEditMitra,
     onDelete: handleDeleteMitra,
+    onChangeSobat: handleChangeSobat,
+    isSobatUpdating,
+    onChangeMitraKepka: handleChangeMitraKepka,
+    isMitraKepkaUpdating,
 });
 
 const domisiliKecamatanFilters = computed(() => [
@@ -94,9 +179,9 @@ const domisiliKecamatanFilters = computed(() => [
         </section>
     </div>
 
-    <UpdateMitraDialog 
-        v-model:open="isUpdateModalOpen" 
-        :mitra="selectedMitra" 
+    <UpdateMitraDialog
+        v-model:open="isUpdateModalOpen"
+        :mitra="selectedMitra"
         :kecamatan-options="kecamatanOptions"
         :desa-options="desaOptions"
     />

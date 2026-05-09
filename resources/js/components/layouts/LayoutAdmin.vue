@@ -173,7 +173,7 @@ function closeMobileSidebar(): void {
             <div v-if="isMobileSidebarOpen" class="fixed inset-0 z-40 bg-slate-900/40 md:hidden" @click="closeMobileSidebar" />
 
             <aside
-                class="fixed top-0 left-0 z-50 flex h-full flex-col border-r border-slate-200 bg-white transition md:static md:z-auto md:h-screen"
+                class="fixed top-0 left-0 z-50 flex h-full flex-col self-start border-r border-slate-200 bg-white transition md:sticky md:top-0 md:z-auto md:h-screen"
                 :class="[isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0', isSidebarCollapsed ? 'w-[72px]' : 'w-[240px]']"
             >
                 <div class="flex h-16 items-center justify-between border-b border-slate-200 px-4">

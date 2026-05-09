@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 import LayoutAdmin from '@/components/layouts/LayoutAdmin.vue';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 defineProps<{
     user?: {
@@ -9,14 +10,20 @@ defineProps<{
     } | null;
     dashboardStats: {
         total_pendaftar: number;
+        total_mitra_kepka: number;
+        total_mitra_lulus: number;
         domisili_summary: Array<{
             kode_kec_dom: string | null;
             nama_kec_dom: string | null;
-            total: number;
+            total_pendaftar: number;
+            total_mitra_kepka: number;
+            total_mitra_lulus: number;
             desa: Array<{
                 kode_desa_dom: string | null;
                 nama_desa_dom: string | null;
-                total: number;
+                total_pendaftar: number;
+                total_mitra_kepka: number;
+                total_mitra_lulus: number;
             }>;
         }>;
     };
@@ -31,74 +38,97 @@ defineOptions({
     <Head title="Admin Dashboard" />
 
     <div class="mx-auto max-w-5xl space-y-5">
-            <header class="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 class="text-2xl font-bold text-slate-900">Admin Dashboard</h1>
-                    <p class="mt-1 text-sm text-slate-600">
-                        Halo, <strong>{{ user?.username ?? 'Pengguna' }}</strong>. Halaman ini hanya bisa diakses setelah login.
-                    </p>
-                </div>
-            </header>
-
-            <section class="grid gap-4 md:grid-cols-2">
-                <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <p class="text-sm font-medium text-slate-600">Jumlah Pendaftar</p>
-                    <p class="mt-2 text-3xl font-bold text-slate-900">{{ dashboardStats.total_pendaftar }}</p>
-                </article>
-            </section>
-
-            <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <h2 class="text-lg font-semibold text-slate-900">Summary Domisili Pendaftar</h2>
+        <header class="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">Dashboard Pendaftaran</h1>
                 <p class="mt-1 text-sm text-slate-600">
-                    Rekap berdasarkan kecamatan dan desa domisili.
+                    Halo, <strong>{{ user?.username ?? 'Pengguna' }}</strong
+                    >.
                 </p>
+            </div>
+        </header>
 
-                <div v-if="dashboardStats.domisili_summary.length" class="mt-4 space-y-3">
-                    <article
+        <section class="grid gap-4 md:grid-cols-3">
+            <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <p class="text-sm font-medium text-slate-600">Jumlah Pendaftar</p>
+                <p class="mt-2 text-3xl font-bold text-slate-900">{{ dashboardStats.total_pendaftar }}</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <p class="text-sm font-medium text-slate-600">Total Mitra KEPKA</p>
+                <p class="mt-2 text-3xl font-bold text-slate-900">{{ dashboardStats.total_mitra_kepka }}</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <p class="text-sm font-medium text-slate-600">Total Mitra Lulus</p>
+                <p class="mt-2 text-3xl font-bold text-slate-900">{{ dashboardStats.total_mitra_lulus }}</p>
+            </article>
+        </section>
+
+        <section class="space-y-4">
+            <div class="px-1">
+                <h2 class="text-lg font-semibold text-slate-900"></h2>
+                <p class="mt-1 text-sm text-slate-600">Rekap pendaftar berdasarkan kecamatan</p>
+            </div>
+
+            <div v-if="dashboardStats.domisili_summary.length" class="space-y-4">
+                <Accordion type="multiple" class="grid gap-3 lg:grid-cols-2">
+                    <AccordionItem
                         v-for="kecamatan in dashboardStats.domisili_summary"
                         :key="kecamatan.kode_kec_dom ?? '__NULL_KEC__'"
-                        class="rounded-lg border border-slate-200 p-4"
+                        :value="kecamatan.kode_kec_dom ?? '__NULL_KEC__'"
+                        class="rounded-xl border border-slate-200 bg-white px-4 shadow-sm"
                     >
-                        <header class="flex items-center justify-between gap-3">
-                            <h3 class="text-sm font-semibold text-slate-900">
-                                Kecamatan Domisili:
-                                <span class="font-bold">
+                        <AccordionTrigger class="py-3 hover:no-underline">
+                            <div class="flex w-full items-center justify-between gap-3">
+                                <h3 class="text-xs font-semibold text-slate-900 sm:text-sm">
                                     {{ kecamatan.nama_kec_dom ?? '-' }}
-                                    ({{ kecamatan.kode_kec_dom ?? '-' }})
-                                </span>
-                            </h3>
-                            <span class="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
-                                {{ kecamatan.total }} pendaftar
-                            </span>
-                        </header>
+                                </h3>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] font-semibold text-slate-700">
+                                        {{ kecamatan.total_pendaftar }} pendaftar
+                                    </span>
+                                    <span class="rounded-md bg-blue-100 px-1.5 py-0.5 text-[11px] font-semibold text-blue-700">
+                                        {{ kecamatan.total_mitra_kepka }} kepka
+                                    </span>
+                                    <span class="rounded-md bg-emerald-100 px-1.5 py-0.5 text-[11px] font-semibold text-emerald-700">
+                                        {{ kecamatan.total_mitra_lulus }} lulus
+                                    </span>
+                                </div>
+                            </div>
+                        </AccordionTrigger>
 
-                        <div class="mt-3 overflow-x-auto">
-                            <table class="min-w-full text-sm">
-                                <thead>
-                                    <tr class="border-b border-slate-200 text-left text-slate-500">
-                                        <th class="py-2 pr-3 font-medium">Desa Domisili</th>
-                                        <th class="py-2 font-medium">Jumlah</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr
-                                        v-for="desa in kecamatan.desa"
-                                        :key="`${kecamatan.kode_kec_dom ?? '__NULL_KEC__'}-${desa.kode_desa_dom ?? '__NULL_DESA__'}`"
-                                        class="border-b border-slate-100 last:border-b-0"
-                                    >
-                                        <td class="py-2 pr-3 text-slate-800">
-                                            {{ desa.nama_desa_dom ?? '-' }}
-                                            ({{ desa.kode_desa_dom ?? '-' }})
-                                        </td>
-                                        <td class="py-2 font-medium text-slate-900">{{ desa.total }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </article>
-                </div>
+                        <AccordionContent class="pb-3">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full text-xs sm:text-sm">
+                                    <thead>
+                                        <tr class="border-b border-slate-200 text-left text-slate-500">
+                                            <th class="py-1.5 pr-2 font-medium">Desa</th>
+                                            <th class="py-1.5 pr-2 font-medium">Pendaftar</th>
+                                            <th class="py-1.5 pr-2 font-medium">KEPKA</th>
+                                            <th class="py-1.5 font-medium">Lulus</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr
+                                            v-for="desa in kecamatan.desa"
+                                            :key="`${kecamatan.kode_kec_dom ?? '__NULL_KEC__'}-${desa.kode_desa_dom ?? '__NULL_DESA__'}`"
+                                            class="border-b border-slate-100 last:border-b-0"
+                                        >
+                                            <td class="py-1.5 pr-2 text-slate-800">
+                                                {{ desa.nama_desa_dom ?? '-' }}
+                                            </td>
+                                            <td class="py-1.5 pr-2 font-medium text-slate-900">{{ desa.total_pendaftar }}</td>
+                                            <td class="py-1.5 pr-2 font-medium text-blue-700">{{ desa.total_mitra_kepka }}</td>
+                                            <td class="py-1.5 font-medium text-emerald-700">{{ desa.total_mitra_lulus }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+            </div>
 
-                <p v-else class="mt-4 text-sm text-slate-500">Belum ada data pendaftar.</p>
-            </section>
-        </div>
+            <p v-else class="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-500 shadow-sm">Belum ada data pendaftar.</p>
+        </section>
+    </div>
 </template>

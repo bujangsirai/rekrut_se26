@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { DataTableRowActions } from '@/components/ui/data-table';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { Pencil, Trash2, Plus, Minus } from 'lucide-vue-next';
+import { Pencil, Trash2, Plus, Minus, Mars, Venus, ChevronDown } from 'lucide-vue-next';
 import { h } from 'vue';
 
 export interface MitraItem {
@@ -20,6 +20,7 @@ export interface MitraItem {
     nama_desa: string;
     nomor_whatsapp: string;
     status_sobat: 'Sudah' | 'Belum';
+    is_mitrakepka: boolean;
     status_wawancara: 'Belum Wawancara' | 'Sudah Wawancara';
     status_kelulusan: 'Lulus' | 'Belum Lulus';
     tanggal_lahir: string;
@@ -43,13 +44,37 @@ function interviewVariant(value: MitraItem['status_wawancara']): 'default' | 'se
     return value === 'Sudah Wawancara' ? 'default' : 'secondary';
 }
 
+function sobatVariant(value: MitraItem['status_sobat']): 'default' | 'secondary' {
+    return value === 'Sudah' ? 'default' : 'secondary';
+}
+
 function graduationVariant(value: MitraItem['status_kelulusan']): 'default' | 'secondary' {
     return value === 'Lulus' ? 'default' : 'secondary';
 }
 
+function wawancaraLabel(value: MitraItem['status_wawancara']): 'Sudah' | 'Belum' {
+    return value === 'Sudah Wawancara' ? 'Sudah' : 'Belum';
+}
+
+function kelulusanLabel(value: MitraItem['status_kelulusan']): 'Sudah' | 'Belum' {
+    return value === 'Lulus' ? 'Sudah' : 'Belum';
+}
+
+function statusBadgeClass(label: 'Sudah' | 'Belum'): string {
+    return label === 'Sudah'
+        ? 'border-emerald-400 bg-emerald-100 text-emerald-900'
+        : 'border-amber-400 bg-amber-100 text-amber-900';
+}
+
+const statusPillCompactClass = 'px-2';
+
 export const getMitraColumns = (actions: {
     onEdit: (mitra: MitraItem) => void;
     onDelete: (mitra: MitraItem) => void;
+    onChangeSobat?: (mitra: MitraItem, statusSobat: MitraItem['status_sobat']) => void;
+    isSobatUpdating?: (mitraId: number) => boolean;
+    onChangeMitraKepka?: (mitra: MitraItem, isMitraKepka: boolean) => void;
+    isMitraKepkaUpdating?: (mitraId: number) => boolean;
 }): ColumnDef<MitraItem>[] => [
     {
         id: 'expander',
@@ -72,42 +97,53 @@ export const getMitraColumns = (actions: {
         meta: { headerClass: 'w-10', cellClass: 'w-10' },
     },
     {
-        accessorKey: 'nik',
-        header: 'NIK',
-        enableSorting: true,
-        cell: ({ row }) => h('span', { class: 'text-sm font-medium text-foreground' }, row.original.nik),
-    },
-    {
         accessorKey: 'nama_lengkap',
-        header: 'Nama',
+        header: () => h('span', { class: 'text-xs font-semibold' }, 'Mitra'),
         enableSorting: true,
-        cell: ({ row }) => h('span', { class: 'text-sm font-medium text-foreground' }, row.original.nama_lengkap),
+        cell: ({ row }) =>
+            h('div', { class: 'leading-tight' }, [
+                h('p', { class: 'text-xs font-semibold text-foreground' }, row.original.nama_lengkap),
+                h('p', { class: 'mt-0.5 text-[11px] text-muted-foreground' }, row.original.nik),
+            ]),
+        meta: { cellClass: 'min-w-[220px]' },
     },
     {
         accessorKey: 'jenis_kelamin',
-        header: 'Jenis Kelamin',
+        header: () => h('span', { class: 'text-xs font-semibold' }, 'JK'),
         enableSorting: true,
-        cell: ({ row }) => h('span', { class: 'text-sm text-muted-foreground' }, row.original.jenis_kelamin === 'Laki-laki' ? 'L' : 'P'),
+        cell: ({ row }) => {
+            const isMale = row.original.jenis_kelamin === 'Laki-laki';
+
+            return h(
+                'span',
+                {
+                    class: isMale
+                        ? 'inline-flex items-center gap-1 rounded-md bg-blue-50 px-1.5 py-0.5 text-[11px] font-medium text-blue-700'
+                        : 'inline-flex items-center gap-1 rounded-md bg-pink-50 px-1.5 py-0.5 text-[11px] font-medium text-pink-700',
+                },
+                [
+                    h(isMale ? Mars : Venus, { class: 'h-3.5 w-3.5' }),
+                    isMale ? 'L' : 'P',
+                ],
+            );
+        },
         meta: { hideOnMobile: true },
     },
     {
         accessorKey: 'nama_kec',
-        header: 'Kecamatan',
+        header: () => h('span', { class: 'text-xs font-semibold' }, 'Domisili'),
         enableSorting: true,
-        cell: ({ row }) => h('span', { class: 'text-sm text-muted-foreground' }, row.original.nama_kec ?? row.original.kode_kec),
-        meta: { hideOnMobile: true },
-    },
-    {
-        accessorKey: 'nama_desa',
-        header: 'Desa',
-        enableSorting: true,
-        cell: ({ row }) => h('span', { class: 'text-sm text-muted-foreground' }, row.original.nama_desa ?? row.original.kode_desa),
-        meta: { hideOnMobile: true },
+        cell: ({ row }) =>
+            h('div', { class: 'leading-tight' }, [
+                h('p', { class: 'text-xs font-semibold text-foreground' }, row.original.nama_kec ?? row.original.kode_kec),
+                h('p', { class: 'mt-0.5 text-[11px] text-muted-foreground' }, row.original.nama_desa ?? row.original.kode_desa),
+            ]),
+        meta: { hideOnMobile: true, cellClass: 'min-w-[150px]' },
     },
     {
         accessorKey: 'nomor_whatsapp',
-        header: 'WhatsApp',
-        enableSorting: true,
+        header: () => h('span', { class: 'text-xs font-semibold' }, 'WA'),
+        enableSorting: false,
         cell: ({ row }) => {
             const raw = row.original.nomor_whatsapp || '';
             let wa = raw.replace(/\D/g, '');
@@ -119,14 +155,14 @@ export const getMitraColumns = (actions: {
                     title: raw,
                     target: '_blank',
                     rel: 'noopener noreferrer',
-                    class: 'inline-flex items-center gap-1.5 text-sm font-medium text-[#25D366] hover:text-[#1da851] transition',
+                    class: 'inline-flex items-center gap-1 text-xs font-medium text-[#25D366] transition hover:text-[#1da851]',
                     onClick: (e: MouseEvent) => e.stopPropagation(),
                 },
                 [
                     h('svg', {
                         xmlns: 'http://www.w3.org/2000/svg',
-                        width: '18',
-                        height: '18',
+                        width: '16',
+                        height: '16',
                         viewBox: '0 0 24 24',
                         fill: 'currentColor',
                         class: 'shrink-0',
@@ -140,11 +176,100 @@ export const getMitraColumns = (actions: {
         },
     },
     {
-        accessorKey: 'status_kelulusan',
-        header: 'Status',
+        accessorKey: 'status_sobat',
+        header: () => h('span', { class: 'text-xs font-semibold' }, 'Sobat'),
         enableSorting: true,
-        cell: ({ row }) =>
-            h(Badge, { variant: graduationVariant(row.original.status_kelulusan), class: 'text-xs' }, () => row.original.status_kelulusan),
+        cell: ({ row }) => {
+            const label = row.original.status_sobat === 'Sudah' ? 'Sudah' : 'Belum';
+            const isUpdating = actions.isSobatUpdating?.(row.original.id) ?? false;
+
+            if (!actions.onChangeSobat) {
+                return h(Badge, { variant: 'outline', class: `text-[11px] inline-flex ${statusPillCompactClass} ${statusBadgeClass(label)}` }, () => label);
+            }
+
+            return h('div', { class: 'relative inline-flex items-center' }, [
+                h(
+                    'select',
+                    {
+                        value: row.original.status_sobat,
+                        disabled: isUpdating,
+                        class: `h-7 min-w-[68px] appearance-none cursor-pointer rounded-full border pl-2 pr-5 text-[11px] font-medium outline-none ${
+                            statusBadgeClass(label)
+                        } ${isUpdating ? 'cursor-not-allowed opacity-60' : ''}`,
+                        onClick: (e: MouseEvent) => e.stopPropagation(),
+                        onChange: (e: Event) => {
+                            const target = e.target as HTMLSelectElement;
+                            actions.onChangeSobat?.(
+                                row.original,
+                                (target.value === 'Sudah' ? 'Sudah' : 'Belum') as MitraItem['status_sobat'],
+                            );
+                        },
+                    },
+                    [
+                        h('option', { value: 'Belum' }, 'Belum'),
+                        h('option', { value: 'Sudah' }, 'Sudah'),
+                    ],
+                ),
+                h(ChevronDown, { class: 'pointer-events-none absolute right-2 h-3.5 w-3.5' }),
+            ]);
+        },
+        meta: { hideOnMobile: true },
+    },
+    {
+        accessorKey: 'is_mitrakepka',
+        header: () => h('span', { class: 'text-xs font-semibold' }, 'KEPKA'),
+        enableSorting: true,
+        cell: ({ row }) => {
+            const label = row.original.is_mitrakepka ? 'Ya' : 'Tidak';
+            const isUpdating = actions.isMitraKepkaUpdating?.(row.original.id) ?? false;
+
+            if (!actions.onChangeMitraKepka) {
+                return h(Badge, { variant: 'outline', class: `text-[11px] inline-flex ${statusPillCompactClass} ${statusBadgeClass(row.original.is_mitrakepka ? 'Sudah' : 'Belum')}` }, () => label);
+            }
+
+            return h('div', { class: 'relative inline-flex items-center' }, [
+                h(
+                    'select',
+                    {
+                        value: row.original.is_mitrakepka ? '1' : '0',
+                        disabled: isUpdating,
+                        class: `h-7 min-w-[68px] appearance-none cursor-pointer rounded-full border pl-2 pr-5 text-[11px] font-medium outline-none ${
+                            statusBadgeClass(row.original.is_mitrakepka ? 'Sudah' : 'Belum')
+                        } ${isUpdating ? 'cursor-not-allowed opacity-60' : ''}`,
+                        onClick: (e: MouseEvent) => e.stopPropagation(),
+                        onChange: (e: Event) => {
+                            const target = e.target as HTMLSelectElement;
+                            actions.onChangeMitraKepka?.(row.original, target.value === '1');
+                        },
+                    },
+                    [
+                        h('option', { value: '0' }, 'Tidak'),
+                        h('option', { value: '1' }, 'Ya'),
+                    ],
+                ),
+                h(ChevronDown, { class: 'pointer-events-none absolute right-2 h-3.5 w-3.5' }),
+            ]);
+        },
+        meta: { hideOnMobile: true },
+    },
+    {
+        accessorKey: 'status_wawancara',
+        header: () => h('span', { class: 'text-xs font-semibold' }, 'Wawancara'),
+        enableSorting: true,
+        cell: ({ row }) => {
+            const label = wawancaraLabel(row.original.status_wawancara);
+            return h(Badge, { variant: 'outline', class: `text-[11px] inline-flex ${statusPillCompactClass} ${statusBadgeClass(label)}` }, () => label);
+        },
+        meta: { hideOnMobile: true },
+    },
+    {
+        accessorKey: 'status_kelulusan',
+        header: () => h('span', { class: 'text-xs font-semibold' }, 'Lulus'),
+        enableSorting: true,
+        cell: ({ row }) => {
+            const label = kelulusanLabel(row.original.status_kelulusan);
+            return h(Badge, { variant: 'outline', class: `text-[11px] inline-flex ${statusPillCompactClass} ${statusBadgeClass(label)}` }, () => label);
+        },
     },
     {
         id: 'actions',

@@ -69,6 +69,7 @@ class AdminMitraController extends Controller
                 'nama_desa' => $item->nama_desa_dom ?? $item->nama_desa_ktp,
                 'nomor_whatsapp' => $item->nomor_whatsapp,
                 'status_sobat' => $item->status_sobat,
+                'is_mitrakepka' => (bool) $item->is_mitrakepka,
                 'status_wawancara' => $item->status_wawancara,
                 'status_kelulusan' => $item->status_kelulusan,
                 'tanggal_lahir' => Carbon::parse($item->tanggal_lahir)->format('Y-m-d'),

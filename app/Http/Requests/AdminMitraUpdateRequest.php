@@ -58,6 +58,7 @@ class AdminMitraUpdateRequest extends FormRequest
             'kode_kec_dom' => ['nullable', 'string', 'max:7'],
             'kode_desa_dom' => ['nullable', 'string', 'max:10'],
             'status_sobat' => ['required', Rule::in(['Sudah', 'Belum'])],
+            'is_mitrakepka' => ['sometimes', 'boolean'],
             'status_wawancara' => ['required', Rule::in(['Belum Wawancara', 'Sudah Wawancara'])],
             'status_kelulusan' => ['required', Rule::in(['Lulus', 'Belum Lulus'])],
         ];

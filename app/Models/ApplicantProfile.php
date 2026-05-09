@@ -39,6 +39,7 @@ class ApplicantProfile extends Model
         'merk_hp',
         'riwayat_kegiatan_bps',
         'status_sobat',
+        'is_mitrakepka',
         'status_wawancara',
         'status_kelulusan',
     ];
@@ -56,6 +57,7 @@ class ApplicantProfile extends Model
             'is_not_asn' => 'boolean',
             'is_not_hamil' => 'boolean',
             'is_motor' => 'boolean',
+            'is_mitrakepka' => 'boolean',
         ];
     }
 }
