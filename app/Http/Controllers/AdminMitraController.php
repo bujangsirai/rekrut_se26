@@ -165,7 +165,7 @@ class AdminMitraController extends Controller
             fputcsv($file, $columns);
 
             foreach ($mitra as $item) {
-                fputcsv($file, [
+                fputcsv($file, array_map([self::class, 'sanitizeCsvValue'], [
                     $item->nik,
                     $item->nama_lengkap,
                     $item->email,
@@ -191,7 +191,7 @@ class AdminMitraController extends Controller
                     $item->status_kelulusan,
                     $item->riwayat_kegiatan_bps,
                     $item->created_at?->toDateTimeString(),
-                ]);
+                ]));
             }
 
             fclose($file);
@@ -244,5 +244,15 @@ class AdminMitraController extends Controller
         }
 
         return response()->file(Storage::disk('local')->path($path));
+    }
+
+    private static function sanitizeCsvValue(mixed $value): mixed
+    {
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        // Normalize multiline input so CSV rows stay intact in spreadsheet apps.
+        return preg_replace('/\s*\R\s*/u', ' ', $value);
     }
 }

@@ -1,0 +1,41 @@
+{
+  "title": "Form Wawancara",
+  "description": "Silakan isi pertanyaan berikut.",
+  "questions": [
+    {
+      "name": "kesiapan_tahapan",
+      "label": "Apakah Anda siap mengikuti seluruh tahapan seleksi?",
+      "type": "radio",
+      "scoring": 20,
+      "required": true,
+      "options": [
+        { "label": "Ya", "value": "ya" },
+        { "label": "Tidak", "value": "tidak" }
+      ],
+      "helpText": "Pilih salah satu jawaban."
+    },
+    {
+      "name": "ketersediaan_waktu",
+      "label": "Ketersediaan waktu Anda untuk kegiatan lapangan?",
+      "type": "select",
+      "scoring": 30,
+      "required": true,
+      "placeholder": "Pilih jawaban",
+      "options": [
+        { "label": "Penuh (Full Time)", "value": "penuh" },
+        { "label": "Parsial (Paruh Waktu)", "value": "parsial" },
+        { "label": "Belum Pasti", "value": "belum_pasti" }
+      ]
+    },
+    {
+      "name": "pengalaman_survei",
+      "label": "Ceritakan pengalaman survei/wawancara Anda",
+      "type": "textarea",
+      "scoring": 50,
+      "required": false,
+      "rows": 4,
+      "placeholder": "Tulis jawaban Anda di sini...",
+      "maxLength": 1000
+    }
+  ]
+}

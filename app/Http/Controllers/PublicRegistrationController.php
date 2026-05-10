@@ -163,6 +163,15 @@ class PublicRegistrationController extends Controller
             'terakhir_diakses_pada' => now(),
         ]);
 
+        // TODO : DO NOT CHANGE THIS LINE AND COMMENT
+        $mulaiWawancara = true;
+
+        if (! (bool) $mulaiWawancara) {
+            return Inertia::render('PublicStatusPage', [
+                'mitra' => $mitra,
+            ]);
+        }
+
         return Inertia::render('SelectionStatusPage', [
             'mitra' => $mitra,
         ]);

@@ -150,8 +150,8 @@ const domisiliKecamatanFilters = computed(() => [
 
     <div class="mx-auto max-w-6xl space-y-5">
         <header class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h1 class="text-2xl font-bold text-slate-900">Kelola Mitra</h1>
-            <p class="mt-1 text-sm text-slate-600">CRUD data mitra calon petugas untuk proses wawancara dan kelulusan.</p>
+            <h1 class="text-2xl font-bold text-slate-900">Semua Calon Mitra</h1>
+            <p class="mt-1 text-sm text-slate-600">Kumpulan data mitra calon petugas Sensus Ekonomi 2026.</p>
         </header>
 
         <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">

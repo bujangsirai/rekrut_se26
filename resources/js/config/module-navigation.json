@@ -22,7 +22,7 @@
         },
         {
             "key": "mitra",
-            "title": "Kelola Mitra",
+            "title": "Daftar Mitra",
             "level": 2,
             "section": "seleksi_mitra",
             "href": "/admin/mitra",
@@ -44,6 +44,15 @@
             "section": "admin",
             "href": "/admin/roles",
             "icon": "shield-check",
+            "roles": ["admin"]
+        },
+        {
+            "key": "kuesioner",
+            "title": "Kelola Kuesioner",
+            "level": 2,
+            "section": "admin",
+            "href": "/admin/kuesioner",
+            "icon": "file-text",
             "roles": ["admin"]
         }
     ]

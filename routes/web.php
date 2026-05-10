@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AdminKuesionerController;
 use App\Http\Controllers\AdminMitraController;
 use App\Http\Controllers\AdminRoleController;
 use App\Http\Controllers\AdminUserController;
@@ -56,6 +57,10 @@ Route::middleware('auth')->group(function () {
                 ->name('admin.users.update');
             Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])
                 ->name('admin.users.destroy');
+            Route::get('/kuesioner', [AdminKuesionerController::class, 'index'])
+                ->name('admin.kuesioner.index');
+            Route::post('/kuesioner', [AdminKuesionerController::class, 'store'])
+                ->name('admin.kuesioner.store');
         });
         Route::get('/mitra', [AdminMitraController::class, 'index'])
             ->name('admin.mitra.index');
