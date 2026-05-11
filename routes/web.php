@@ -23,6 +23,8 @@ Route::post('/cek-status', [PublicRegistrationController::class, 'checkStatus'])
     ->name('public.check-status');
 Route::get('/status', [PublicRegistrationController::class, 'showStatus'])
     ->name('public.status');
+Route::post('/status/upload-sobat', [PublicRegistrationController::class, 'uploadSobat'])
+    ->name('public.status.upload-sobat');
 Route::get('/seleksi/{kode_akses}', [PublicRegistrationController::class, 'selection'])
     ->name('public.selection');
 

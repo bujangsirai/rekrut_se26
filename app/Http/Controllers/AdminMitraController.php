@@ -30,6 +30,7 @@ class AdminMitraController extends Controller
                 'mb_ktp.file_path as ktp_path',
                 'mb_spek.file_path as spek_hp_path',
                 'mb_ig.file_path as follow_ig_path',
+                'mb_sobat.file_path as upload_sobat_path',
             ])
             ->leftJoin('master_kecamatan_desa as mkd_ktp', function ($join) {
                 $join->on('mitra.kode_kec', '=', 'mkd_ktp.kode_kec')
@@ -51,6 +52,10 @@ class AdminMitraController extends Controller
                 $join->on('mitra.nik', '=', 'mb_ig.nik')
                     ->where('mb_ig.jenis_berkas', '=', 'follow_ig');
             }, null, null)
+            ->leftJoin('mitra_berkas as mb_sobat', function ($join) {
+                $join->on('mitra.nik', '=', 'mb_sobat.nik')
+                    ->where('mb_sobat.jenis_berkas', '=', 'upload_sobat');
+            }, null, null)
             ->latest('mitra.id')
             ->get()
             ->map(static fn (object $item): array => [
@@ -59,6 +64,7 @@ class AdminMitraController extends Controller
                 'url_ktp' => $item->ktp_path ? Crypt::encryptString($item->ktp_path) : null,
                 'url_spek_hp' => $item->spek_hp_path ? Crypt::encryptString($item->spek_hp_path) : null,
                 'url_follow_ig' => $item->follow_ig_path ? Crypt::encryptString($item->follow_ig_path) : null,
+                'url_upload_sobat' => $item->upload_sobat_path ? Crypt::encryptString($item->upload_sobat_path) : null,
                 'kode_akses' => $item->kode_akses,
                 'nama_lengkap' => $item->nama_lengkap,
                 'email' => $item->email,

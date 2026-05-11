@@ -7,6 +7,7 @@ use App\Models\ApplicantProfile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -125,9 +126,10 @@ class PublicRegistrationController extends Controller
                 ->with('error', 'NIK tidak terdaftar.');
         }
 
+        $request->session()->put('status_nik', $mitra->nik);
+
         return redirect()
-            ->route('public.status')
-            ->with(['status_nik' => $mitra->nik]);
+            ->route('public.status');
     }
 
     public function showStatus(): Response|RedirectResponse
@@ -139,10 +141,78 @@ class PublicRegistrationController extends Controller
         }
 
         $mitra = ApplicantProfile::query()->where('nik', $nik)->firstOrFail();
+        $uploadSobatExists = DB::table('mitra_berkas')
+            ->where('nik', $mitra->nik)
+            ->where('jenis_berkas', 'upload_sobat')
+            ->exists();
 
         return Inertia::render('PublicStatusPage', [
             'mitra' => $mitra,
+            'uploadSobatExists' => $uploadSobatExists,
         ]);
+    }
+
+    public function uploadSobat(Request $request): RedirectResponse
+    {
+        $nik = session('status_nik');
+
+        if (! $nik) {
+            return redirect()
+                ->route('home')
+                ->with('error', 'Sesi status telah berakhir. Silahkan cek status kembali.');
+        }
+
+        $mitra = ApplicantProfile::query()->where('nik', $nik)->first();
+        if (! $mitra) {
+            return redirect()
+                ->route('home')
+                ->with('error', 'Data pendaftar tidak ditemukan.');
+        }
+
+        $validated = $request->validate([
+            'upload_sobat_file' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:2048'],
+        ]);
+
+        $filePath = $validated['upload_sobat_file']->store('mitra/upload_sobat', 'local');
+
+        $existingUpload = DB::table('mitra_berkas')
+            ->select(['id', 'file_path'])
+            ->where('nik', $mitra->nik)
+            ->where('jenis_berkas', 'upload_sobat')
+            ->first();
+
+        DB::transaction(function () use ($existingUpload, $mitra, $filePath): void {
+            if ($existingUpload) {
+                DB::table('mitra_berkas')
+                    ->where('id', $existingUpload->id)
+                    ->update([
+                        'file_path' => $filePath,
+                        'updated_at' => now(),
+                    ]);
+            } else {
+                DB::table('mitra_berkas')->insert([
+                    'nik' => $mitra->nik,
+                    'jenis_berkas' => 'upload_sobat',
+                    'file_path' => $filePath,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            $mitra->update([
+                'status_sobat' => 'Sudah',
+            ]);
+        });
+
+        if ($existingUpload?->file_path && Storage::disk('local')->exists($existingUpload->file_path)) {
+            Storage::disk('local')->delete($existingUpload->file_path);
+        }
+
+        $request->session()->put('status_nik', $mitra->nik);
+
+        return redirect()
+            ->route('public.status')
+            ->with('success', 'Bukti pendaftaran berhasil diunggah.');
     }
 
     public function selection(string $kode_akses): Response|RedirectResponse

@@ -10,6 +10,7 @@ export interface MitraItem {
     url_ktp: string | null;
     url_spek_hp: string | null;
     url_follow_ig: string | null;
+    url_upload_sobat: string | null;
     kode_akses: string;
     nama_lengkap: string;
     email: string;

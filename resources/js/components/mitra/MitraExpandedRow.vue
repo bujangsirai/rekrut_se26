@@ -29,6 +29,21 @@ defineProps<{
                     <span>File Follow IG</span>
                 </Button>
             </a>
+            <a
+                v-if="original.url_upload_sobat"
+                :href="`/admin/file/${original.url_upload_sobat}`"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <Button variant="outline" size="sm" class="h-7 cursor-pointer gap-1 text-[11px]">
+                    <FileImage class="h-3.5 w-3.5" />
+                    <span>File Upload Sobat</span>
+                </Button>
+            </a>
+            <Button v-else variant="outline" size="sm" class="h-7 gap-1 text-[11px]" disabled>
+                <FileImage class="h-3.5 w-3.5" />
+                <span>File Upload Sobat</span>
+            </Button>
         </div>
         <div>
             <p class="text-[10px] font-semibold text-muted-foreground uppercase">Email</p>

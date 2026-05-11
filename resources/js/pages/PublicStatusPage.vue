@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 defineOptions({
     // @ts-ignore
@@ -17,10 +17,17 @@ const props = defineProps<{
         status_kelulusan: string;
         [key: string]: any;
     };
+    uploadSobatExists: boolean;
 }>();
+const page = usePage();
+const selectedSobatFile = ref<File | null>(null);
+const isUploadingSobat = ref(false);
+const uploadError = ref('');
 const mitraRegistrationUrl = 'https://mitra.bps.go.id';
 const adminWaUrl = 'https://wa.me/6282144406055';
 const isBelumSobat = computed(() => props.mitra.status_sobat === 'Belum');
+const flashSuccess = computed(() => (page.props.flash as { success?: string } | undefined)?.success ?? '');
+const serverUploadError = computed(() => (page.props.errors as Record<string, string> | undefined)?.upload_sobat_file ?? '');
 
 const publicStatusContent = computed(() => {
     if (props.mitra.status_sobat === 'Belum') {
@@ -32,8 +39,8 @@ const publicStatusContent = computed(() => {
 
     if (props.mitra.status_sobat === 'Sudah' && props.mitra.status_wawancara === 'Belum Wawancara') {
         return {
-            badge: 'Menunggu Tahap Berikutnya',
-            detail: 'Silahkan tunggu tahap berikutnya ya',
+            badge: 'Pendaftaran Anda Telah Terproses. Silahkan Menunggu Informasi Berikutnya',
+            detail: '',
         };
     }
 
@@ -44,10 +51,35 @@ const publicStatusContent = computed(() => {
 });
 
 const publicStatusClass = computed(() => {
-    return props.mitra.status_sobat === 'Belum'
-        ? 'bg-red-100 text-red-800'
-        : 'bg-cyan-100 text-cyan-800';
+    return props.mitra.status_sobat === 'Belum' ? 'bg-red-100 text-red-800' : 'bg-cyan-100 text-cyan-800';
 });
+
+function onSelectSobatFile(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
+    selectedSobatFile.value = file;
+    uploadError.value = '';
+}
+
+function submitSobatUpload(): void {
+    uploadError.value = '';
+
+    if (!selectedSobatFile.value) {
+        uploadError.value = 'Silahkan pilih file terlebih dahulu.';
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('upload_sobat_file', selectedSobatFile.value);
+
+    isUploadingSobat.value = true;
+    router.post('/status/upload-sobat', formData, {
+        forceFormData: true,
+        preserveScroll: true,
+        onFinish: () => {
+            isUploadingSobat.value = false;
+        },
+    });
+}
 </script>
 
 <template>
@@ -81,7 +113,7 @@ const publicStatusClass = computed(() => {
                                     {{ publicStatusContent.badge }}
                                 </span>
                                 <p v-if="isBelumSobat" class="mt-2 text-sm leading-relaxed text-slate-600">
-                                    Silahkan lanjutkan pendaftaran di
+                                    Selain Mitra KEPKA BPS 2026, Silahkan lanjutkan pendaftaran di
                                     <a
                                         :href="mitraRegistrationUrl"
                                         target="_blank"
@@ -90,11 +122,62 @@ const publicStatusClass = computed(() => {
                                     >
                                         mitra.bps.go.id
                                     </a>
-                                    , jika merasa sudah mendaftar namun status di halaman ini belum berubah, silahkan hubungi WA admin
+
+                                    lalu upload bukti screenshot nya ke sini
                                 </p>
                                 <p v-else class="mt-2 text-sm leading-relaxed text-slate-600">
                                     {{ publicStatusContent.detail }}
                                 </p>
+                            </div>
+                        </div>
+
+                        <div v-if="isBelumSobat" class="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4 text-left">
+                            <div class="flex items-center gap-1">
+                                <p class="text-sm font-semibold text-slate-800">Silahkan upload bukti pendaftaran/penerimaan penawaran anda disini</p>
+                                <a
+                                    href="/img/contoh/daftar_survei.png"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="text-xs text-cyan-600 underline-offset-2 hover:underline"
+                                >
+                                    (contoh)
+                                </a>
+                            </div>
+
+                            <div class="mt-3 space-y-2">
+                                <div class="relative">
+                                    <input
+                                        type="file"
+                                        accept=".pdf,image/png,image/jpeg,image/jpg,image/webp"
+                                        class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                                        @change="onSelectSobatFile"
+                                    />
+                                    <div class="flex w-full items-center rounded-md border border-slate-300 bg-white text-sm">
+                                        <div class="m-[3px] cursor-pointer rounded-md bg-cyan-50 px-3 py-1.5 text-sm font-semibold text-cyan-700">
+                                            Pilih File
+                                        </div>
+                                        <span class="truncate px-2" :class="selectedSobatFile ? 'text-slate-900' : 'text-slate-500'">
+                                            {{ selectedSobatFile?.name ?? 'Belum ada file yang dipilih' }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <p class="text-xs text-slate-500">Format: pdf/jpg/jpeg/png/webp. Maksimal 2MB.</p>
+                                <p v-if="uploadSobatExists" class="text-xs font-medium text-emerald-700">
+                                    Bukti upload sobat sudah tersimpan. Upload ulang akan mengganti file sebelumnya.
+                                </p>
+                                <p v-if="uploadError" class="text-xs font-medium text-red-600">{{ uploadError }}</p>
+                                <p v-if="serverUploadError" class="text-xs font-medium text-red-600">{{ serverUploadError }}</p>
+                                <p v-if="flashSuccess" class="text-xs font-medium text-emerald-700">{{ flashSuccess }}</p>
+
+                                <button
+                                    type="button"
+                                    class="inline-flex h-9 items-center justify-center rounded-md bg-cyan-600 px-4 text-sm font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                    :disabled="isUploadingSobat"
+                                    @click="submitSobatUpload"
+                                >
+                                    {{ isUploadingSobat ? 'Mengunggah...' : 'Upload Bukti' }}
+                                </button>
                             </div>
                         </div>
 
