@@ -191,9 +191,9 @@ const page = usePage();
                             lain-lain;
                         </li>
                         <li>
-                            Melakukan registrasi secara mandiri pada Aplikasi Sobat BPS (melalui website
+                            Melakukan registrasi secara mandiri pada Aplikasi (melalui website
                             <a href="https://mitra.bps.go.id" target="_blank" class="font-semibold text-cyan-600 underline hover:text-cyan-700"
-                                >Sobat BPS</a
+                                >Mitra BPS</a
                             >);
                         </li>
                         <li>

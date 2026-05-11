@@ -33,7 +33,7 @@ defineProps<{
 
                 <p class="mb-8 text-sm text-slate-500">
                     Langkah berikutnya, bagi yang belum memiliki akun mitra BPS, silahkan melanjutkan registrasi ke
-                    <a href="https://mitra.bps.go.id" target="_blank" class="font-semibold text-cyan-600 underline hover:text-cyan-700">Sobat BPS</a>
+                    <a href="https://mitra.bps.go.id" target="_blank" class="font-semibold text-cyan-600 underline hover:text-cyan-700">Mitra BPS</a>
                 </p>
 
                 <div class="mt-8">
