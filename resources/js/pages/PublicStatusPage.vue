@@ -124,7 +124,7 @@ function submitSobatUpload(): void {
                                         mitra.bps.go.id
                                     </a>
 
-                                    lalu upload bukti screenshot nya ke sini
+                                    lalu upload bukti screenshot nya ke sini. jika mitra KEPKA, silahkan upload bukti penerimaan penawaran
                                 </p>
                                 <p v-else class="mt-2 text-sm leading-relaxed text-slate-600">
                                     {{ publicStatusContent.detail }}
@@ -134,7 +134,7 @@ function submitSobatUpload(): void {
 
                         <div v-if="isBelumSobat" class="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4 text-left">
                             <div class="flex items-center gap-1">
-                                <p class="text-sm font-semibold text-slate-800">Silahkan upload bukti pendaftaran/penerimaan penawaran anda disini</p>
+                                <p class="text-sm font-semibold text-slate-800">Silahkan upload bukti pendaftaran/penerimaan penawaran</p>
                                 <a
                                     :href="media + 'img/contoh/daftar_survei.png'"
                                     target="_blank"
