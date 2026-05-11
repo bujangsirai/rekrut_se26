@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import { media } from '@/lib/media';
 
 defineOptions({
     // @ts-ignore
@@ -135,7 +136,7 @@ function submitSobatUpload(): void {
                             <div class="flex items-center gap-1">
                                 <p class="text-sm font-semibold text-slate-800">Silahkan upload bukti pendaftaran/penerimaan penawaran anda disini</p>
                                 <a
-                                    href="/img/contoh/daftar_survei.png"
+                                    :href="media + 'img/contoh/daftar_survei.png'"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     class="text-xs text-cyan-600 underline-offset-2 hover:underline"
