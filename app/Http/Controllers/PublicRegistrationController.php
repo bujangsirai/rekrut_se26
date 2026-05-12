@@ -99,15 +99,26 @@ class PublicRegistrationController extends Controller
     public function success(): Response|RedirectResponse
     {
         $nik = session('nik');
-        $nama_lengkap = session('nama_lengkap');
 
-        if (! $nik || ! $nama_lengkap) {
+        if (! $nik) {
             return redirect()->route('public.register');
         }
 
-        return Inertia::render('PublicRegistrationSuccessPage', [
-            'nik' => $nik,
-            'nama_lengkap' => $nama_lengkap,
+        $requestMitra = ApplicantProfile::query()->where('nik', $nik)->first();
+        if (! $requestMitra) {
+            return redirect()->route('public.register');
+        }
+
+        session()->put('status_nik', $requestMitra->nik);
+
+        $uploadSobatExists = DB::table('mitra_berkas')
+            ->where('nik', $requestMitra->nik)
+            ->where('jenis_berkas', 'upload_sobat')
+            ->exists();
+
+        return Inertia::render('PublicStatusPage', [
+            'mitra' => $requestMitra,
+            'uploadSobatExists' => $uploadSobatExists,
         ]);
     }
 

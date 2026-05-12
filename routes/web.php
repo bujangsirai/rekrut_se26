@@ -63,6 +63,8 @@ Route::middleware('auth')->group(function () {
                 ->name('admin.kuesioner.index');
             Route::post('/kuesioner', [AdminKuesionerController::class, 'store'])
                 ->name('admin.kuesioner.store');
+            Route::put('/kuesioner/{kuesioner}', [AdminKuesionerController::class, 'update'])
+                ->name('admin.kuesioner.update');
         });
         Route::get('/mitra', [AdminMitraController::class, 'index'])
             ->name('admin.mitra.index');
