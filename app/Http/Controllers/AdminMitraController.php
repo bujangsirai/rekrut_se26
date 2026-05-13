@@ -161,7 +161,7 @@ class AdminMitraController extends Controller
             'Domisili KSB', 'Kecamatan Domisili', 'Desa Domisili',
             'Tempat Lahir', 'Tanggal Lahir', 'Status Perkawinan',
             'Pendidikan', 'Pekerjaan', 'Nomor WA', 'Merk HP',
-            'Bukan ASN', 'Tidak Hamil', 'Memiliki Motor',
+            'Bukan ASN', 'Tidak Hamil', 'Memiliki Motor', 'is_mitrakepka',
             'Status Sobat', 'Status Wawancara', 'Status Kelulusan',
             'Riwayat Kegiatan BPS', 'Tanggal Daftar',
         ];
@@ -192,6 +192,7 @@ class AdminMitraController extends Controller
                     $item->is_not_asn ? 'Ya' : 'Tidak',
                     $item->is_not_hamil ? 'Ya' : 'Tidak',
                     $item->is_motor ? 'Ya' : 'Tidak',
+                    $item->is_mitrakepka ? 'Ya' : 'Tidak',
                     $item->status_sobat,
                     $item->status_wawancara,
                     $item->status_kelulusan,
