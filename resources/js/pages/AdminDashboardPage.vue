@@ -12,18 +12,21 @@ defineProps<{
         total_pendaftar: number;
         total_mitra_kepka: number;
         total_mitra_lulus: number;
+        total_sobat_sudah: number;
         domisili_summary: Array<{
             kode_kec_dom: string | null;
             nama_kec_dom: string | null;
             total_pendaftar: number;
             total_mitra_kepka: number;
             total_mitra_lulus: number;
+            total_sobat_sudah: number;
             desa: Array<{
                 kode_desa_dom: string | null;
                 nama_desa_dom: string | null;
                 total_pendaftar: number;
                 total_mitra_kepka: number;
                 total_mitra_lulus: number;
+                total_sobat_sudah: number;
             }>;
         }>;
     };
@@ -48,10 +51,14 @@ defineOptions({
             </div>
         </header>
 
-        <section class="grid gap-4 md:grid-cols-3">
+        <section class="grid gap-4 md:grid-cols-4">
             <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                 <p class="text-sm font-medium text-slate-600">Jumlah Pendaftar</p>
                 <p class="mt-2 text-3xl font-bold text-slate-900">{{ dashboardStats.total_pendaftar }}</p>
+            </article>
+            <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <p class="text-sm font-medium text-slate-600">Total Sobat Sudah</p>
+                <p class="mt-2 text-3xl font-bold text-slate-900">{{ dashboardStats.total_sobat_sudah }}</p>
             </article>
             <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                 <p class="text-sm font-medium text-slate-600">Total Mitra KEPKA</p>
@@ -86,6 +93,9 @@ defineOptions({
                                     <span class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] font-semibold text-slate-700">
                                         {{ kecamatan.total_pendaftar }} pendaftar
                                     </span>
+                                    <span class="rounded-md bg-cyan-100 px-1.5 py-0.5 text-[11px] font-semibold text-cyan-700">
+                                        {{ kecamatan.total_sobat_sudah }} sobat sudah
+                                    </span>
                                     <span class="rounded-md bg-blue-100 px-1.5 py-0.5 text-[11px] font-semibold text-blue-700">
                                         {{ kecamatan.total_mitra_kepka }} kepka
                                     </span>
@@ -103,6 +113,7 @@ defineOptions({
                                         <tr class="border-b border-slate-200 text-left text-slate-500">
                                             <th class="py-1.5 pr-2 font-medium">Desa</th>
                                             <th class="py-1.5 pr-2 font-medium">Pendaftar</th>
+                                            <th class="py-1.5 pr-2 font-medium">Sobat Sudah</th>
                                             <th class="py-1.5 pr-2 font-medium">KEPKA</th>
                                             <th class="py-1.5 font-medium">Lulus</th>
                                         </tr>
@@ -117,6 +128,7 @@ defineOptions({
                                                 {{ desa.nama_desa_dom ?? '-' }}
                                             </td>
                                             <td class="py-1.5 pr-2 font-medium text-slate-900">{{ desa.total_pendaftar }}</td>
+                                            <td class="py-1.5 pr-2 font-medium text-cyan-700">{{ desa.total_sobat_sudah }}</td>
                                             <td class="py-1.5 pr-2 font-medium text-blue-700">{{ desa.total_mitra_kepka }}</td>
                                             <td class="py-1.5 font-medium text-emerald-700">{{ desa.total_mitra_lulus }}</td>
                                         </tr>
