@@ -73,14 +73,17 @@ const page = usePage();
                             telah dibuka. Silakan baca syarat dan ketentuan terlebih dahulu sebelum melanjutkan pendaftaran.
                         </p>
 
-                        <div class="flex justify-start sm:justify-end">
+                        <div class="flex flex-col items-start gap-2 sm:items-end">
                             <button
                                 type="button"
                                 @click="openTermsModal"
-                                class="inline-flex min-h-11 w-full cursor-pointer items-center justify-center rounded-xl bg-green-600 px-4 py-2.5 text-center text-[13px] leading-tight font-semibold text-white transition hover:bg-green-700 sm:h-auto sm:w-auto sm:px-5 sm:py-2.5 sm:text-base"
+                                :disabled="true"
+                                class="inline-flex min-h-11 w-full cursor-pointer items-center justify-center rounded-xl bg-green-600 px-4 py-2.5 text-center text-[13px] leading-tight font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60 sm:h-auto sm:w-auto sm:px-5 sm:py-2.5 sm:text-base"
                             >
                                 Daftar Sebagai Petugas SE2026
                             </button>
+                            <!-- TODO -->
+                            <p class="text-xs font-semibold text-red-700">MOHON MAAF PENDAFTARAN DITUTUP</p>
                         </div>
                     </div>
                 </section>

@@ -13,8 +13,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicLandingController::class, 'index'])
     ->name('home');
-Route::get('/daftar', [PublicRegistrationController::class, 'create'])
-    ->name('public.register');
+// TODO
+// Route::get('/daftar', [PublicRegistrationController::class, 'create'])
+//     ->name('public.register');
 Route::post('/daftar', [PublicRegistrationController::class, 'store'])
     ->name('public.register.store');
 Route::get('/daftar/sukses', [PublicRegistrationController::class, 'success'])

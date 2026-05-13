@@ -170,11 +170,13 @@ function submitSobatUpload(): void {
                                 <p v-if="uploadError" class="text-xs font-medium text-red-600">{{ uploadError }}</p>
                                 <p v-if="serverUploadError" class="text-xs font-medium text-red-600">{{ serverUploadError }}</p>
                                 <p v-if="flashSuccess" class="text-xs font-medium text-emerald-700">{{ flashSuccess }}</p>
+                                <!-- TODO -->
+                                <p class="text-xs font-semibold text-red-700">MOHON MAAF ANDA TIDAK BISA UPLOAD FILE LAGI</p>
 
                                 <button
                                     type="button"
                                     class="inline-flex h-9 items-center justify-center rounded-md bg-cyan-600 px-4 text-sm font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-60"
-                                    :disabled="isUploadingSobat"
+                                    :disabled="true"
                                     @click="submitSobatUpload"
                                 >
                                     {{ isUploadingSobat ? 'Mengunggah...' : 'Upload Bukti' }}
