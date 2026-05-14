@@ -3,6 +3,7 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { media } from '@/lib/media';
 import BelumSobatStatusView from '@/components/common/public-status/BelumSobatStatusView.vue';
+import BelumSobatStatusNoUploadView from '@/components/common/public-status/BelumSobatStatusNoUploadView.vue';
 import SudahBelumWawancaraStatusView from '@/components/common/public-status/SudahBelumWawancaraStatusView.vue';
 import StatusDiprosesView from '@/components/common/public-status/StatusDiprosesView.vue';
 
@@ -82,7 +83,22 @@ function submitSobatUpload(): void {
                                 <p class="text-xl font-bold text-slate-900">{{ mitra.nama_lengkap }}</p>
                             </div>
 
+                            <!--
                             <BelumSobatStatusView
+                                v-if="isBelumSobat"
+                                :mitra-registration-url="mitraRegistrationUrl"
+                                :media-base="media"
+                                :selected-sobat-file="selectedSobatFile"
+                                :upload-sobat-exists="uploadSobatExists"
+                                :upload-error="uploadError"
+                                :server-upload-error="serverUploadError"
+                                :flash-success="flashSuccess"
+                                :is-uploading-sobat="isUploadingSobat"
+                                @select-sobat-file="onSelectSobatFile"
+                                @submit-sobat-upload="submitSobatUpload"
+                            />
+                            -->
+                            <BelumSobatStatusNoUploadView
                                 v-if="isBelumSobat"
                                 :mitra-registration-url="mitraRegistrationUrl"
                                 :media-base="media"
