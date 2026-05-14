@@ -16,10 +16,11 @@ Route::get('/', [PublicLandingController::class, 'index'])
 // TODO
 // Route::get('/daftar', [PublicRegistrationController::class, 'create'])
 //     ->name('public.register');
-Route::post('/daftar', [PublicRegistrationController::class, 'store'])
-    ->name('public.register.store');
-Route::get('/daftar/sukses', [PublicRegistrationController::class, 'success'])
-    ->name('public.register.success');
+// Route::post('/daftar', [PublicRegistrationController::class, 'store'])
+//     ->name('public.register.store');
+// Route::get('/daftar/sukses', [PublicRegistrationController::class, 'success'])
+//     ->name('public.register.success');
+
 Route::post('/cek-status', [PublicRegistrationController::class, 'checkStatus'])
     ->name('public.check-status');
 Route::get('/status', [PublicRegistrationController::class, 'showStatus'])

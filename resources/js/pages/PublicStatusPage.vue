@@ -2,6 +2,9 @@
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { media } from '@/lib/media';
+import BelumSobatStatusView from '@/components/common/public-status/BelumSobatStatusView.vue';
+import SudahBelumWawancaraStatusView from '@/components/common/public-status/SudahBelumWawancaraStatusView.vue';
+import StatusDiprosesView from '@/components/common/public-status/StatusDiprosesView.vue';
 
 defineOptions({
     // @ts-ignore
@@ -27,33 +30,9 @@ const uploadError = ref('');
 const mitraRegistrationUrl = 'https://mitra.bps.go.id';
 const adminWaUrl = 'https://wa.me/6282144406055';
 const isBelumSobat = computed(() => props.mitra.status_sobat === 'Belum');
+const isSudahBelumWawancara = computed(() => props.mitra.status_sobat === 'Sudah' && props.mitra.status_wawancara === 'Belum Wawancara');
 const flashSuccess = computed(() => (page.props.flash as { success?: string } | undefined)?.success ?? '');
 const serverUploadError = computed(() => (page.props.errors as Record<string, string> | undefined)?.upload_sobat_file ?? '');
-
-const publicStatusContent = computed(() => {
-    if (props.mitra.status_sobat === 'Belum') {
-        return {
-            badge: 'Belum terdaftar di mitra.bps.go.id',
-            detail: 'Silahkan lanjutkan pendaftaran, jika merasa sudah mendaftar namun status di halaman ini belum berubah, silahkan hubungi admin',
-        };
-    }
-
-    if (props.mitra.status_sobat === 'Sudah' && props.mitra.status_wawancara === 'Belum Wawancara') {
-        return {
-            badge: 'Pendaftaran Anda Telah Terproses. Silahkan Menunggu Informasi Berikutnya',
-            detail: '',
-        };
-    }
-
-    return {
-        badge: 'Status Diproses',
-        detail: 'Silahkan menunggu tahapan berikutnya',
-    };
-});
-
-const publicStatusClass = computed(() => {
-    return props.mitra.status_sobat === 'Belum' ? 'bg-red-100 text-red-800' : 'bg-cyan-100 text-cyan-800';
-});
 
 function onSelectSobatFile(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0] ?? null;
@@ -103,85 +82,21 @@ function submitSobatUpload(): void {
                                 <p class="text-xl font-bold text-slate-900">{{ mitra.nama_lengkap }}</p>
                             </div>
 
-                            <div class="space-y-2">
-                                <span class="block text-xs font-semibold tracking-wider text-slate-500 uppercase">Status Sekarang</span>
-                                <span
-                                    :class="[
-                                        'inline-flex items-center rounded-full px-4 py-1.5 text-center text-sm font-semibold',
-                                        publicStatusClass,
-                                    ]"
-                                >
-                                    {{ publicStatusContent.badge }}
-                                </span>
-                                <p v-if="isBelumSobat" class="mt-2 text-sm leading-relaxed text-slate-600">
-                                    Selain Mitra KEPKA BPS 2026, Silahkan lanjutkan pendaftaran di
-                                    <a
-                                        :href="mitraRegistrationUrl"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        class="font-semibold text-cyan-700 underline decoration-cyan-300 underline-offset-2 hover:text-cyan-800"
-                                    >
-                                        mitra.bps.go.id
-                                    </a>
-
-                                    lalu upload bukti screenshot nya ke sini. jika mitra KEPKA, silahkan upload bukti penerimaan penawaran
-                                </p>
-                                <p v-else class="mt-2 text-sm leading-relaxed text-slate-600">
-                                    {{ publicStatusContent.detail }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div v-if="isBelumSobat" class="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4 text-left">
-                            <div class="flex items-center gap-1">
-                                <p class="text-sm font-semibold text-slate-800">Silahkan upload bukti pendaftaran/penerimaan penawaran</p>
-                                <a
-                                    :href="media + 'img/contoh/daftar_survei.png'"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="text-xs text-cyan-600 underline-offset-2 hover:underline"
-                                >
-                                    (contoh)
-                                </a>
-                            </div>
-
-                            <div class="mt-3 space-y-2">
-                                <div class="relative">
-                                    <input
-                                        type="file"
-                                        accept=".pdf,image/png,image/jpeg,image/jpg,image/webp"
-                                        class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                                        @change="onSelectSobatFile"
-                                    />
-                                    <div class="flex w-full items-center rounded-md border border-slate-300 bg-white text-sm">
-                                        <div class="m-[3px] cursor-pointer rounded-md bg-cyan-50 px-3 py-1.5 text-sm font-semibold text-cyan-700">
-                                            Pilih File
-                                        </div>
-                                        <span class="truncate px-2" :class="selectedSobatFile ? 'text-slate-900' : 'text-slate-500'">
-                                            {{ selectedSobatFile?.name ?? 'Belum ada file yang dipilih' }}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <p class="text-xs text-slate-500">Format: pdf/jpg/jpeg/png/webp. Maksimal 2MB.</p>
-                                <p v-if="uploadSobatExists" class="text-xs font-medium text-emerald-700">
-                                    Bukti upload sobat sudah tersimpan. Upload ulang akan mengganti file sebelumnya.
-                                </p>
-                                <p v-if="uploadError" class="text-xs font-medium text-red-600">{{ uploadError }}</p>
-                                <p v-if="serverUploadError" class="text-xs font-medium text-red-600">{{ serverUploadError }}</p>
-                                <p v-if="flashSuccess" class="text-xs font-medium text-emerald-700">{{ flashSuccess }}</p>
-                                <!-- TODO -->
-                                <p class="text-xs font-semibold text-red-700">MOHON MAAF ANDA TIDAK BISA UPLOAD FILE LAGI</p>
-
-                                <button
-                                    type="button"
-                                    class="inline-flex h-9 items-center justify-center rounded-md bg-cyan-600 px-4 text-sm font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-60"
-                                    :disabled="true"
-                                    @click="submitSobatUpload"
-                                >
-                                    {{ isUploadingSobat ? 'Mengunggah...' : 'Upload Bukti' }}
-                                </button>
-                            </div>
+                            <BelumSobatStatusView
+                                v-if="isBelumSobat"
+                                :mitra-registration-url="mitraRegistrationUrl"
+                                :media-base="media"
+                                :selected-sobat-file="selectedSobatFile"
+                                :upload-sobat-exists="uploadSobatExists"
+                                :upload-error="uploadError"
+                                :server-upload-error="serverUploadError"
+                                :flash-success="flashSuccess"
+                                :is-uploading-sobat="isUploadingSobat"
+                                @select-sobat-file="onSelectSobatFile"
+                                @submit-sobat-upload="submitSobatUpload"
+                            />
+                            <SudahBelumWawancaraStatusView v-else-if="isSudahBelumWawancara" />
+                            <StatusDiprosesView v-else />
                         </div>
 
                         <div class="mt-8 flex justify-center">

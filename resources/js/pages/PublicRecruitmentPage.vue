@@ -59,7 +59,8 @@ const page = usePage();
     <div class="min-h-screen bg-linear-to-b from-cyan-50 via-slate-100 to-slate-200 px-2 py-5 sm:px-6 sm:py-10 lg:py-12">
         <div class="mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-6xl items-center sm:min-h-[calc(100vh-5rem)] lg:min-h-[calc(100vh-6rem)]">
             <div class="w-full space-y-4 sm:space-y-6 lg:space-y-8">
-                <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <!-- TODO : ini gua hidden kan -->
+                <section class="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                     <header class="bg-linear-to-r from-cyan-700 to-cyan-600 px-3 py-2.5 sm:px-6 sm:py-4">
                         <h2 class="text-[15px] leading-snug font-bold tracking-normal text-white sm:text-lg lg:text-xl">
                             REKRUTMEN MITRA BPS KABUPATEN SUMBAWA BARAT
@@ -88,16 +89,17 @@ const page = usePage();
                     </div>
                 </section>
 
+                <!-- TODO : ini gua hidden kan juga -->
                 <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                     <header class="bg-linear-to-r from-cyan-700 to-cyan-600 px-3 py-2.5 sm:px-6 sm:py-4">
-                        <h2 class="text-[15px] leading-snug font-bold tracking-normal text-white sm:text-lg lg:text-xl">CEK STATUS PENDAFTARAN</h2>
+                        <h2 class="text-[15px] leading-snug font-bold tracking-normal text-white sm:text-lg lg:text-xl">
+                            CEK STATUS PENDAFTARAN SENSUS EKONOMI 2026 KABUPATEN SUMBAWA BARAT
+                        </h2>
                     </header>
 
                     <div class="space-y-4 p-4 text-[14px] text-slate-800 sm:space-y-5 sm:p-7 sm:text-base">
                         <div class="space-y-3">
-                            <label class="block text-[14px] font-medium text-slate-800 sm:text-base">
-                                Masukkan NIK untuk mengecek apakah Anda sudah terdaftar atau belum :
-                            </label>
+                            <label class="block text-[14px] font-medium text-slate-800 sm:text-base"> Masukkan NIK untuk melanjutkan </label>
                             <form
                                 class="flex flex-col gap-3 sm:flex-row sm:items-start"
                                 @submit.prevent="
