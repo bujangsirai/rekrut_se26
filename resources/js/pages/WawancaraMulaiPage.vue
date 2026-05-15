@@ -169,8 +169,17 @@ function handleCheckboxChange(questionName: string, optionValue: string, event: 
     answers[questionName] = nextValues;
 }
 
+function isRadioSelected(questionName: string, optionValue: string): boolean {
+    const currentAnswer = answers[questionName];
+    return typeof currentAnswer === 'string' && currentAnswer === optionValue;
+}
+
+function isCheckboxSelected(questionName: string, optionValue: string): boolean {
+    return getCheckboxAnswers(questionName).includes(optionValue);
+}
+
 function submitAnswers(): void {
-    let hasError = false;
+    let hasClientError = false;
 
     for (const question of respondentQuestions.value) {
         if (question.type === 'label') {
@@ -182,7 +191,7 @@ function submitAnswers(): void {
 
             if (question.required && selectedValues.length === 0) {
                 answerErrors[question.name] = 'Jawaban wajib diisi.';
-                hasError = true;
+                hasClientError = true;
                 continue;
             }
 
@@ -195,7 +204,7 @@ function submitAnswers(): void {
 
         if (question.required && currentValue === '') {
             answerErrors[question.name] = 'Jawaban wajib diisi.';
-            hasError = true;
+            hasClientError = true;
             continue;
         }
 
@@ -207,16 +216,12 @@ function submitAnswers(): void {
         if (question.is_validation) {
             validateAnswerOnKeyup(question);
             if (answerErrors[question.name]) {
-                hasError = true;
+                hasClientError = true;
                 continue;
             }
         } else {
             answerErrors[question.name] = '';
         }
-    }
-
-    if (hasError) {
-        return;
     }
 
     const payloadAnswers: Record<string, AnswerValue> = {};
@@ -232,6 +237,10 @@ function submitAnswers(): void {
 
         const currentAnswer = answers[question.name];
         payloadAnswers[question.name] = typeof currentAnswer === 'string' ? currentAnswer.trim() : '';
+    }
+
+    if (hasClientError) {
+        console.log('Kirim Jawaban payload (client has validation errors):', payloadAnswers);
     }
 
     router.post(
@@ -315,7 +324,7 @@ function saveDraftAnswers(): void {
                         <div v-for="question in respondentQuestions" :key="question.name" class="space-y-2">
                             <div
                                 v-if="question.type === 'label'"
-                                class="rounded-md bg-slate-50 px-3 py-2 text-slate-800 [&_a]:text-cyan-700 [&_a]:underline [&_h1]:mb-2 [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:leading-tight [&_h2]:mb-2 [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:leading-tight [&_h3]:mb-2 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:leading-tight [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:text-sm [&_p]:leading-6 [&_ul]:list-disc [&_ul]:pl-5"
+                                class="rounded-md bg-slate-50 px-3 py-2 text-slate-800 [&_a]:text-cyan-700 [&_a]:underline [&_h1]:mb-2 [&_h1]:!text-3xl [&_h1]:!font-bold [&_h1]:!leading-tight [&_h2]:mb-2 [&_h2]:!text-2xl [&_h2]:!font-semibold [&_h2]:!leading-tight [&_h3]:mb-2 [&_h3]:!text-xl [&_h3]:!font-semibold [&_h3]:!leading-tight [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:!text-sm [&_p]:!leading-6 [&_ul]:list-disc [&_ul]:pl-5"
                                 v-html="getLabelHtml(question)"
                             />
                             <label v-if="question.type !== 'label'" :for="question.name" class="text-sm font-semibold text-slate-800">
@@ -326,7 +335,10 @@ function saveDraftAnswers(): void {
                                 <label
                                     v-for="option in question.options ?? []"
                                     :key="option.value"
-                                    class="inline-flex items-center gap-2 text-sm text-slate-700"
+                                    :class="[
+                                        'inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm transition',
+                                        isRadioSelected(question.name, option.value) ? 'bg-cyan-50 font-medium text-cyan-700' : 'text-slate-700',
+                                    ]"
                                 >
                                     <input
                                         v-model="answers[question.name]"
@@ -355,12 +367,15 @@ function saveDraftAnswers(): void {
                                 <label
                                     v-for="option in question.options ?? []"
                                     :key="option.value"
-                                    class="inline-flex items-center gap-2 text-sm text-slate-700"
+                                    :class="[
+                                        'inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm transition',
+                                        isCheckboxSelected(question.name, option.value) ? 'bg-cyan-50 font-medium text-cyan-700' : 'text-slate-700',
+                                    ]"
                                 >
                                     <input
                                         type="checkbox"
                                         :value="option.value"
-                                        :checked="getCheckboxAnswers(question.name).includes(option.value)"
+                                        :checked="isCheckboxSelected(question.name, option.value)"
                                         class="h-4 w-4 accent-cyan-600"
                                         @change="handleCheckboxChange(question.name, option.value, $event)"
                                     />
@@ -372,7 +387,7 @@ function saveDraftAnswers(): void {
                                 v-else-if="question.type === 'textarea'"
                                 :id="question.name"
                                 v-model="answers[question.name] as string"
-                                rows="4"
+                                rows="3"
                                 class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-cyan-500"
                                 :placeholder="question.placeholder ?? 'Tulis jawaban Anda di sini...'"
                                 @keyup="validateAnswerOnKeyup(question)"

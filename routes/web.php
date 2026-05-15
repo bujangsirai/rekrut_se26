@@ -85,6 +85,8 @@ Route::middleware('auth')->group(function () {
             ->name('admin.mitra.seleksi');
         Route::get('/penilaian/{kode_akses}', [PublicRegistrationController::class, 'assessorSelection'])
             ->name('admin.penilaian.show');
+        Route::post('/penilaian/{kode_akses}', [PublicRegistrationController::class, 'submitAssessorSelection'])
+            ->name('admin.penilaian.submit');
         Route::get('/mitra/export', [AdminMitraController::class, 'export'])
             ->name('admin.mitra.export');
         Route::get('/file/{payload}', [AdminMitraController::class, 'file'])

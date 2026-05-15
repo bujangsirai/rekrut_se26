@@ -43,6 +43,7 @@ class ApplicantProfile extends Model
         'status_wawancara',
         'status_kelulusan',
         'jawaban_kuesioner',
+        'penilaian_kuesioner',
         'skor_kuesioner',
     ];
 
@@ -61,6 +62,7 @@ class ApplicantProfile extends Model
             'is_motor' => 'boolean',
             'is_mitrakepka' => 'boolean',
             'jawaban_kuesioner' => 'array',
+            'penilaian_kuesioner' => 'array',
             'skor_kuesioner' => 'integer',
         ];
     }
