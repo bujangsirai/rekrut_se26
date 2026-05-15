@@ -7,7 +7,7 @@ import { Head, router, usePage } from '@inertiajs/vue3';
 import { useForm } from '@tanstack/vue-form';
 import { computed, ref } from 'vue';
 
-type QuestionType = 'radio' | 'select' | 'textarea' | 'text' | 'label';
+type QuestionType = 'radio' | 'select' | 'checkbox' | 'textarea' | 'text' | 'label';
 
 interface QuestionOption {
     label: string;
@@ -296,7 +296,7 @@ function buildStructure(validate = false): KuesionerStructure | null {
             question.helpText = source.helpText.trim();
         }
 
-        if (source.type === 'radio' || source.type === 'select') {
+        if (source.type === 'radio' || source.type === 'select' || source.type === 'checkbox') {
             const parsedOptions = parseOptions(source.optionsText);
             if (validate && !parsedOptions.length) {
                 builderError.value = `Options pertanyaan ke-${index + 1} wajib diisi.`;
@@ -495,7 +495,14 @@ function saveStructure(): void {
                             <div class="grid gap-3 md:grid-cols-2">
                                 <label class="space-y-1">
                                     <span class="text-xs font-medium text-slate-700">Name</span>
-                                    <input v-model="question.name" type="text" class="h-9 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-cyan-500" />
+                                    <input
+                                        v-model="question.name"
+                                        type="text"
+                                        spellcheck="false"
+                                        autocorrect="off"
+                                        autocapitalize="off"
+                                        class="h-9 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-cyan-500"
+                                    />
                                 </label>
 
                                 <label class="space-y-1">
@@ -505,6 +512,7 @@ function saveStructure(): void {
                                         <option value="textarea">textarea</option>
                                         <option value="select">select</option>
                                         <option value="radio">radio</option>
+                                        <option value="checkbox">checkbox</option>
                                         <option value="label">label</option>
                                     </select>
                                 </label>
@@ -517,24 +525,44 @@ function saveStructure(): void {
                                         v-if="question.type === 'label'"
                                         v-model="question.label"
                                         rows="3"
+                                        spellcheck="false"
+                                        autocorrect="off"
+                                        autocapitalize="off"
                                         class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-cyan-500"
                                     />
                                     <input
                                         v-else
                                         v-model="question.label"
                                         type="text"
+                                        spellcheck="false"
+                                        autocorrect="off"
+                                        autocapitalize="off"
                                         class="h-9 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-cyan-500"
                                     />
                                 </label>
 
                                 <label v-if="question.type !== 'label'" class="space-y-1">
                                     <span class="text-xs font-medium text-slate-700">Placeholder (opsional)</span>
-                                    <input v-model="question.placeholder" type="text" class="h-9 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-cyan-500" />
+                                    <input
+                                        v-model="question.placeholder"
+                                        type="text"
+                                        spellcheck="false"
+                                        autocorrect="off"
+                                        autocapitalize="off"
+                                        class="h-9 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-cyan-500"
+                                    />
                                 </label>
 
                                 <label v-if="question.type !== 'label'" class="space-y-1">
                                     <span class="text-xs font-medium text-slate-700">Help Text (opsional)</span>
-                                    <input v-model="question.helpText" type="text" class="h-9 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-cyan-500" />
+                                    <input
+                                        v-model="question.helpText"
+                                        type="text"
+                                        spellcheck="false"
+                                        autocorrect="off"
+                                        autocapitalize="off"
+                                        class="h-9 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-cyan-500"
+                                    />
                                 </label>
 
                                 <label class="inline-flex items-center gap-2 md:col-span-2">
@@ -552,6 +580,9 @@ function saveStructure(): void {
                                     <textarea
                                         v-model="question.scoringOptionsText"
                                         rows="3"
+                                        spellcheck="false"
+                                        autocorrect="off"
+                                        autocapitalize="off"
                                         class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-cyan-500"
                                     />
                                 </label>
@@ -566,6 +597,9 @@ function saveStructure(): void {
                                     <input
                                         v-model="question.validationRegex"
                                         type="text"
+                                        spellcheck="false"
+                                        autocorrect="off"
+                                        autocapitalize="off"
                                         class="h-9 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-cyan-500"
                                         placeholder="contoh: ^[0-9]{16}$"
                                     />
@@ -576,14 +610,24 @@ function saveStructure(): void {
                                     <input
                                         v-model="question.validationMessage"
                                         type="text"
+                                        spellcheck="false"
+                                        autocorrect="off"
+                                        autocapitalize="off"
                                         class="h-9 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-cyan-500"
                                         placeholder="Input tidak sesuai format."
                                     />
                                 </label>
 
-                                <label v-if="question.type === 'radio' || question.type === 'select'" class="space-y-1 md:col-span-2">
+                                <label v-if="question.type === 'radio' || question.type === 'select' || question.type === 'checkbox'" class="space-y-1 md:col-span-2">
                                     <span class="text-xs font-medium text-slate-700">Options (1 baris = `label|value`)</span>
-                                    <textarea v-model="question.optionsText" rows="3" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-cyan-500" />
+                                    <textarea
+                                        v-model="question.optionsText"
+                                        rows="3"
+                                        spellcheck="false"
+                                        autocorrect="off"
+                                        autocapitalize="off"
+                                        class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-cyan-500"
+                                    />
                                 </label>
 
                                 <label v-if="question.type !== 'label'" class="inline-flex items-center gap-2 md:col-span-2">

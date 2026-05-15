@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import { computed, reactive } from 'vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { computed, reactive, ref } from 'vue';
 
 defineOptions({
     // @ts-ignore
@@ -16,7 +16,7 @@ interface QuestionConfig {
     name: string;
     label: string;
     value?: string;
-    type: 'radio' | 'select' | 'textarea' | 'text' | 'label';
+    type: 'radio' | 'select' | 'checkbox' | 'textarea' | 'text' | 'label';
     is_showing?: boolean;
     is_scoring?: boolean;
     is_validation?: boolean;
@@ -28,6 +28,8 @@ interface QuestionConfig {
     options?: QuestionOption[];
 }
 
+type AnswerValue = string | string[];
+
 function getLabelHtml(question: QuestionConfig): string {
     return question.label || question.value || '';
 }
@@ -37,22 +39,59 @@ interface SelectionFormConfig {
     description?: string;
     questions: QuestionConfig[];
 }
-const answers = reactive<Record<string, string>>({});
+const answers = reactive<Record<string, AnswerValue>>({});
 const answerErrors = reactive<Record<string, string>>({});
+const isSubmitting = ref(false);
+const isSavingDraft = ref(false);
 
 const props = defineProps<{
     mitra: {
         nik: string;
         nama_lengkap: string;
+        kode_akses: string;
         posisi_dilamar: string;
         status_kelulusan: string;
+        jawaban_kuesioner?: Record<string, unknown> | null;
         [key: string]: any;
     };
     formConfig: SelectionFormConfig;
 }>();
 
+const page = usePage();
+const serverErrors = computed<Record<string, string>>(() => (page.props.errors ?? {}) as Record<string, string>);
+
+function getPrefilledAnswer(question: QuestionConfig): AnswerValue {
+    const questionName = question.name;
+    const finalAnswers = props.mitra.jawaban_kuesioner;
+    if (!finalAnswers || typeof finalAnswers !== 'object') {
+        return question.type === 'checkbox' ? [] : '';
+    }
+
+    const item = (finalAnswers as Record<string, unknown>)[questionName];
+    if (typeof item === 'string') {
+        return question.type === 'checkbox' ? [item] : item;
+    }
+
+    if (Array.isArray(item)) {
+        return item.filter((value): value is string => typeof value === 'string');
+    }
+
+    if (item && typeof item === 'object' && 'value' in item) {
+        const answerValue = (item as { value?: unknown }).value;
+        if (typeof answerValue === 'string') {
+            return question.type === 'checkbox' ? [answerValue] : answerValue;
+        }
+
+        if (Array.isArray(answerValue)) {
+            return answerValue.filter((value): value is string => typeof value === 'string');
+        }
+    }
+
+    return question.type === 'checkbox' ? [] : '';
+}
+
 for (const question of props.formConfig.questions ?? []) {
-    answers[question.name] = '';
+    answers[question.name] = getPrefilledAnswer(question);
     answerErrors[question.name] = '';
 }
 
@@ -75,7 +114,7 @@ const respondentQuestionNumbers = computed(() => {
 });
 
 function validateAnswerOnKeyup(question: QuestionConfig): void {
-    if (question.type === 'label') {
+    if (question.type === 'label' || question.type === 'checkbox') {
         return;
     }
 
@@ -90,7 +129,8 @@ function validateAnswerOnKeyup(question: QuestionConfig): void {
         return;
     }
 
-    const currentValue = answers[question.name] ?? '';
+    const currentAnswer = answers[question.name];
+    const currentValue = typeof currentAnswer === 'string' ? currentAnswer : '';
     if (currentValue === '') {
         answerErrors[question.name] = '';
         return;
@@ -104,6 +144,147 @@ function validateAnswerOnKeyup(question: QuestionConfig): void {
     } catch {
         answerErrors[question.name] = 'Konfigurasi RegExp tidak valid.';
     }
+}
+
+function getCheckboxAnswers(questionName: string): string[] {
+    const currentAnswer = answers[questionName];
+    if (!Array.isArray(currentAnswer)) {
+        return [];
+    }
+
+    return currentAnswer
+        .filter((value): value is string => typeof value === 'string')
+        .map((value) => value.trim())
+        .filter((value) => value !== '');
+}
+
+function handleCheckboxChange(questionName: string, optionValue: string, event: Event): void {
+    const target = event.target as HTMLInputElement | null;
+    const checked = target?.checked ?? false;
+    const currentValues = getCheckboxAnswers(questionName);
+    const nextValues = checked
+        ? Array.from(new Set([...currentValues, optionValue]))
+        : currentValues.filter((value) => value !== optionValue);
+
+    answers[questionName] = nextValues;
+}
+
+function submitAnswers(): void {
+    let hasError = false;
+
+    for (const question of respondentQuestions.value) {
+        if (question.type === 'label') {
+            continue;
+        }
+
+        if (question.type === 'checkbox') {
+            const selectedValues = getCheckboxAnswers(question.name);
+
+            if (question.required && selectedValues.length === 0) {
+                answerErrors[question.name] = 'Jawaban wajib diisi.';
+                hasError = true;
+                continue;
+            }
+
+            answerErrors[question.name] = '';
+            continue;
+        }
+
+        const currentAnswer = answers[question.name];
+        const currentValue = typeof currentAnswer === 'string' ? currentAnswer.trim() : '';
+
+        if (question.required && currentValue === '') {
+            answerErrors[question.name] = 'Jawaban wajib diisi.';
+            hasError = true;
+            continue;
+        }
+
+        if (currentValue === '') {
+            answerErrors[question.name] = '';
+            continue;
+        }
+
+        if (question.is_validation) {
+            validateAnswerOnKeyup(question);
+            if (answerErrors[question.name]) {
+                hasError = true;
+                continue;
+            }
+        } else {
+            answerErrors[question.name] = '';
+        }
+    }
+
+    if (hasError) {
+        return;
+    }
+
+    const payloadAnswers: Record<string, AnswerValue> = {};
+    for (const question of respondentQuestions.value) {
+        if (question.type === 'label') {
+            continue;
+        }
+
+        if (question.type === 'checkbox') {
+            payloadAnswers[question.name] = getCheckboxAnswers(question.name);
+            continue;
+        }
+
+        const currentAnswer = answers[question.name];
+        payloadAnswers[question.name] = typeof currentAnswer === 'string' ? currentAnswer.trim() : '';
+    }
+
+    router.post(
+        `/seleksi/${props.mitra.kode_akses}`,
+        {
+            answers: payloadAnswers,
+        },
+        {
+            preserveScroll: true,
+            onStart: () => {
+                isSubmitting.value = true;
+            },
+            onFinish: () => {
+                isSubmitting.value = false;
+            },
+        },
+    );
+}
+
+function saveDraftAnswers(): void {
+    const payloadAnswers: Record<string, AnswerValue> = {};
+
+    for (const question of respondentQuestions.value) {
+        if (question.type === 'label') {
+            continue;
+        }
+
+        if (question.type === 'checkbox') {
+            payloadAnswers[question.name] = getCheckboxAnswers(question.name);
+            continue;
+        }
+
+        const currentAnswer = answers[question.name];
+        payloadAnswers[question.name] = typeof currentAnswer === 'string' ? currentAnswer.trim() : '';
+    }
+
+    console.log('Simpan Sementara payload:', payloadAnswers);
+
+    router.post(
+        `/seleksi/${props.mitra.kode_akses}/sementara`,
+        {
+            answers: payloadAnswers,
+        },
+        {
+            preserveScroll: true,
+            onStart: () => {
+                isSavingDraft.value = true;
+            },
+            onFinish: () => {
+                isSavingDraft.value = false;
+            },
+        },
+    );
 }
 </script>
 
@@ -161,7 +342,7 @@ function validateAnswerOnKeyup(question: QuestionConfig): void {
                             <select
                                 v-else-if="question.type === 'select'"
                                 :id="question.name"
-                                v-model="answers[question.name]"
+                                v-model="answers[question.name] as string"
                                 class="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none focus:border-cyan-500"
                             >
                                 <option value="">{{ question.placeholder ?? 'Pilih jawaban' }}</option>
@@ -170,10 +351,27 @@ function validateAnswerOnKeyup(question: QuestionConfig): void {
                                 </option>
                             </select>
 
+                            <div v-else-if="question.type === 'checkbox'" class="flex flex-wrap gap-3">
+                                <label
+                                    v-for="option in question.options ?? []"
+                                    :key="option.value"
+                                    class="inline-flex items-center gap-2 text-sm text-slate-700"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        :value="option.value"
+                                        :checked="getCheckboxAnswers(question.name).includes(option.value)"
+                                        class="h-4 w-4 accent-cyan-600"
+                                        @change="handleCheckboxChange(question.name, option.value, $event)"
+                                    />
+                                    {{ option.label }}
+                                </label>
+                            </div>
+
                             <textarea
                                 v-else-if="question.type === 'textarea'"
                                 :id="question.name"
-                                v-model="answers[question.name]"
+                                v-model="answers[question.name] as string"
                                 rows="4"
                                 class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-cyan-500"
                                 :placeholder="question.placeholder ?? 'Tulis jawaban Anda di sini...'"
@@ -183,7 +381,7 @@ function validateAnswerOnKeyup(question: QuestionConfig): void {
                             <input
                                 v-else-if="question.type !== 'label'"
                                 :id="question.name"
-                                v-model="answers[question.name]"
+                                v-model="answers[question.name] as string"
                                 type="text"
                                 class="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none focus:border-cyan-500"
                                 :placeholder="question.placeholder ?? 'Tulis jawaban...'"
@@ -193,6 +391,9 @@ function validateAnswerOnKeyup(question: QuestionConfig): void {
                             <p v-if="answerErrors[question.name]" class="text-xs text-red-600">
                                 {{ answerErrors[question.name] }}
                             </p>
+                            <p v-else-if="serverErrors[`answers.${question.name}`]" class="text-xs text-red-600">
+                                {{ serverErrors[`answers.${question.name}`] }}
+                            </p>
                             <p v-if="question.helpText && question.type !== 'label'" class="text-xs text-slate-500">
                                 {{ question.helpText }}
                             </p>
@@ -200,12 +401,22 @@ function validateAnswerOnKeyup(question: QuestionConfig): void {
                         <p v-if="!respondentQuestions.length" class="text-sm text-slate-500">Belum ada pertanyaan aktif saat ini.</p>
                     </div>
 
-                    <div class="flex justify-end">
+                    <div class="flex justify-end gap-3">
                         <button
                             type="button"
-                            class="inline-flex h-10 items-center justify-center rounded-lg bg-cyan-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-cyan-700"
+                            :disabled="isSavingDraft || isSubmitting"
+                            class="inline-flex h-10 items-center justify-center rounded-lg border border-cyan-600 bg-white px-5 text-sm font-semibold text-cyan-700 shadow-sm transition hover:bg-cyan-50"
+                            @click="saveDraftAnswers"
                         >
-                            Kirim Jawaban (Dummy)
+                            {{ isSavingDraft ? 'Menyimpan...' : 'Simpan Sementara' }}
+                        </button>
+                        <button
+                            type="button"
+                            :disabled="isSubmitting || isSavingDraft"
+                            class="inline-flex h-10 items-center justify-center rounded-lg bg-cyan-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-cyan-700"
+                            @click="submitAnswers"
+                        >
+                            {{ isSubmitting ? 'Mengirim...' : 'Kirim Jawaban' }}
                         </button>
                     </div>
                 </div>

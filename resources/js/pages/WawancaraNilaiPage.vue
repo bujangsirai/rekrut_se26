@@ -17,7 +17,7 @@ interface QuestionConfig {
     name: string;
     label: string;
     value?: string;
-    type: 'radio' | 'select' | 'textarea' | 'text' | 'label';
+    type: 'radio' | 'select' | 'checkbox' | 'textarea' | 'text' | 'label';
     is_showing?: boolean;
     is_scoring?: boolean;
     required?: boolean;
@@ -43,6 +43,7 @@ const props = defineProps<{
     mitra: {
         nik: string;
         nama_lengkap: string;
+        jawaban_kuesioner?: Record<string, unknown> | null;
         [key: string]: unknown;
     };
     formConfig: SelectionFormConfig;
@@ -75,6 +76,63 @@ const questionNumbers = computed(() => {
 
     return numbers;
 });
+
+function getStoredValue(question: QuestionConfig): string | string[] {
+    const savedAnswers = props.mitra.jawaban_kuesioner;
+    if (!savedAnswers || typeof savedAnswers !== 'object') {
+        return question.type === 'checkbox' ? [] : '';
+    }
+
+    const item = (savedAnswers as Record<string, unknown>)[question.name];
+    if (typeof item === 'string') {
+        return question.type === 'checkbox' ? [item] : item;
+    }
+
+    if (Array.isArray(item)) {
+        return item.filter((value): value is string => typeof value === 'string');
+    }
+
+    if (item && typeof item === 'object' && 'value' in item) {
+        const value = (item as { value?: unknown }).value;
+        if (typeof value === 'string') {
+            return question.type === 'checkbox' ? [value] : value;
+        }
+
+        if (Array.isArray(value)) {
+            return value.filter((selected): selected is string => typeof selected === 'string');
+        }
+    }
+
+    return question.type === 'checkbox' ? [] : '';
+}
+
+function mapValueToLabel(question: QuestionConfig, rawValue: string): string {
+    const option = (question.options ?? []).find((item) => item.value === rawValue);
+    return option?.label ?? rawValue;
+}
+
+function renderAnswer(question: QuestionConfig): string {
+    const storedValue = getStoredValue(question);
+
+    if (Array.isArray(storedValue)) {
+        if (storedValue.length === 0) {
+            return '-';
+        }
+
+        return storedValue.map((value) => mapValueToLabel(question, value)).join(', ');
+    }
+
+    const normalized = storedValue.trim();
+    if (normalized === '') {
+        return '-';
+    }
+
+    if (question.type === 'radio' || question.type === 'select') {
+        return mapValueToLabel(question, normalized);
+    }
+
+    return normalized;
+}
 </script>
 
 <template>
@@ -113,7 +171,7 @@ const questionNumbers = computed(() => {
                             </p>
 
                             <div class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                                Jawaban responden ditampilkan di sini (menunggu integrasi penyimpanan jawaban).
+                                {{ renderAnswer(question) }}
                             </div>
 
                             <div v-if="question.is_scoring && (question.scoringOptions ?? []).length" class="space-y-2">

@@ -35,7 +35,7 @@ Required fields per question:
 
 - `name` (string, unique in one form)
 - `label` (string)
-- `type` (`text` | `textarea` | `select` | `radio` | `label`)
+- `type` (`text` | `textarea` | `select` | `radio` | `checkbox` | `label`)
 - `is_showing` (boolean)
 - `is_scoring` (boolean)
 - `is_validation` (boolean)
@@ -45,7 +45,7 @@ Optional fields:
 - `required` (boolean)
 - `placeholder` (string)
 - `helpText` (string)
-- `options` (array of `{ label, value }`, required for `radio/select`)
+- `options` (array of `{ label, value }`, required for `radio/select/checkbox`)
 - `scoringOptions` (array of `{ label, score }`, required when `is_scoring = true`)
 - `validationRegex` (string RegExp pattern)
 - `validationMessage` (string)
@@ -106,6 +106,30 @@ Example:
     { "label": "Tidak ada Aktivitas", "score": 10 },
     { "label": "Aktivitas setengah hari", "score": 6 },
     { "label": "Aktivitas sampai sore", "score": 3 }
+  ]
+}
+```
+
+## Checkbox Type (Multiple Choice)
+
+- `type: "checkbox"` mendukung multi-pilihan (bisa pilih lebih dari satu).
+- Nilai jawaban disimpan sebagai array string pada `value`.
+
+Example:
+
+```json
+{
+  "name": "ketersediaan_hari",
+  "label": "Hari yang tersedia untuk bertugas",
+  "type": "checkbox",
+  "required": true,
+  "is_showing": true,
+  "is_scoring": false,
+  "is_validation": false,
+  "options": [
+    { "label": "Senin", "value": "senin" },
+    { "label": "Selasa", "value": "selasa" },
+    { "label": "Rabu", "value": "rabu" }
   ]
 }
 ```

@@ -127,10 +127,12 @@ const page = usePage();
                                         }"
                                     />
                                 </div>
+
+                                <!-- TODO disabled -->
                                 <button
                                     type="submit"
-                                    disabled
                                     class="h-11 cursor-pointer rounded-xl bg-green-600 px-5 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60 sm:h-11 sm:shrink-0 sm:rounded-lg sm:text-base"
+                                    disabled
                                 >
                                     Cek Status
                                 </button>

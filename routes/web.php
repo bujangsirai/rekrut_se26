@@ -34,6 +34,10 @@ Route::post('/status/upload-sobat', [PublicRegistrationController::class, 'uploa
     ->name('public.status.upload-sobat');
 Route::get('/seleksi/{kode_akses}', [PublicRegistrationController::class, 'selection'])
     ->name('public.selection');
+Route::post('/seleksi/{kode_akses}', [PublicRegistrationController::class, 'submitSelection'])
+    ->name('public.selection.submit');
+Route::post('/seleksi/{kode_akses}/sementara', [PublicRegistrationController::class, 'saveSelectionDraft'])
+    ->name('public.selection.draft');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginPageController::class, 'index'])

@@ -11,6 +11,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -312,12 +313,18 @@ class PublicRegistrationController extends Controller
             ->with('success', 'Bukti pendaftaran berhasil diunggah.');
     }
 
-    public function selection(string $kode_akses): Response|RedirectResponse
+    public function selection(Request $request, string $kode_akses): Response|RedirectResponse
     {
         $mitra = $this->findMitraByAccessCode($kode_akses);
 
         if ($mitra->kode_akses_kedaluwarsa_pada && $mitra->kode_akses_kedaluwarsa_pada->isPast()) {
             abort(403, 'Kode akses telah kedaluwarsa.');
+        }
+
+        if ($mitra->status_wawancara === 'Sudah Wawancara') {
+            $request->session()->put('status_nik', $mitra->nik);
+
+            return redirect()->route('public.status');
         }
 
         $mitra->update([
@@ -350,6 +357,374 @@ class PublicRegistrationController extends Controller
             'mitra' => $mitra,
             'formConfig' => $formConfig,
         ]);
+    }
+
+    public function submitSelection(Request $request, string $kode_akses): RedirectResponse
+    {
+        $mitra = $this->findMitraByAccessCode($kode_akses);
+
+        if ($mitra->kode_akses_kedaluwarsa_pada && $mitra->kode_akses_kedaluwarsa_pada->isPast()) {
+            abort(403, 'Kode akses telah kedaluwarsa.');
+        }
+
+        $formConfig = $this->activeFormConfig();
+
+        $respondentQuestions = collect($formConfig['questions'] ?? [])
+            ->filter(static function (mixed $question): bool {
+                if (! is_array($question)) {
+                    return false;
+                }
+
+                $isShowing = ! array_key_exists('is_showing', $question) || $question['is_showing'] !== false;
+                $isLabel = ($question['type'] ?? 'text') === 'label';
+
+                return $isShowing && ! $isLabel;
+            })
+            ->values();
+
+        $normalizedAnswers = (array) $request->input('answers', []);
+        foreach ($respondentQuestions as $question) {
+            if (! is_array($question) || (($question['type'] ?? 'text') !== 'checkbox')) {
+                continue;
+            }
+
+            $name = (string) ($question['name'] ?? '');
+            if ($name === '') {
+                continue;
+            }
+
+            if (! array_key_exists($name, $normalizedAnswers)) {
+                $normalizedAnswers[$name] = [];
+
+                continue;
+            }
+
+            $rawValue = $normalizedAnswers[$name];
+            if (is_string($rawValue)) {
+                $normalizedAnswers[$name] = [trim($rawValue)];
+
+                continue;
+            }
+
+            if (! is_array($rawValue)) {
+                $normalizedAnswers[$name] = [];
+            }
+        }
+
+        $request->merge([
+            'answers' => $normalizedAnswers,
+        ]);
+
+        $rules = [
+            'answers' => ['required', 'array'],
+        ];
+
+        foreach ($respondentQuestions as $question) {
+            if (! is_array($question)) {
+                continue;
+            }
+
+            $name = (string) ($question['name'] ?? '');
+            if ($name === '') {
+                continue;
+            }
+
+            $type = (string) ($question['type'] ?? 'text');
+            if ($type === 'checkbox') {
+                $fieldRules = ['nullable', 'array'];
+                if (($question['required'] ?? false) === true) {
+                    $fieldRules = ['required', 'array', 'min:1'];
+                }
+
+                $rules["answers.$name"] = $fieldRules;
+
+                if (is_array($question['options'] ?? null)) {
+                    $optionValues = collect($question['options'])
+                        ->filter(static fn (mixed $option): bool => is_array($option) && array_key_exists('value', $option))
+                        ->map(static fn (array $option): string => (string) $option['value'])
+                        ->values()
+                        ->all();
+
+                    if ($optionValues !== []) {
+                        $rules["answers.$name.*"] = ['string', Rule::in($optionValues)];
+                    }
+                }
+
+                continue;
+            }
+
+            $fieldRules = ['nullable', 'string'];
+            if (($question['required'] ?? false) === true) {
+                $fieldRules = ['required', 'string'];
+            }
+
+            if (($type === 'radio' || $type === 'select') && is_array($question['options'] ?? null)) {
+                $optionValues = collect($question['options'])
+                    ->filter(static fn (mixed $option): bool => is_array($option) && array_key_exists('value', $option))
+                    ->map(static fn (array $option): string => (string) $option['value'])
+                    ->values()
+                    ->all();
+
+                if ($optionValues !== []) {
+                    $fieldRules[] = Rule::in($optionValues);
+                }
+            }
+
+            $rules["answers.$name"] = $fieldRules;
+        }
+
+        $validated = $request->validate($rules);
+        $answers = (array) ($validated['answers'] ?? []);
+
+        foreach ($respondentQuestions as $question) {
+            if (! is_array($question)) {
+                continue;
+            }
+
+            $name = (string) ($question['name'] ?? '');
+            if ($name === '') {
+                continue;
+            }
+
+            $questionType = (string) ($question['type'] ?? 'text');
+            $isValidation = ($question['is_validation'] ?? false) === true;
+            $pattern = is_string($question['validationRegex'] ?? null) ? trim($question['validationRegex']) : '';
+
+            if ($questionType !== 'checkbox' && $isValidation && $pattern !== '') {
+                $currentAnswerRaw = $answers[$name] ?? '';
+                $currentAnswer = trim((string) $currentAnswerRaw);
+
+                if ($currentAnswer !== '') {
+                    $normalizedPattern = str_replace('~', '\\~', $pattern);
+                    set_error_handler(static fn () => true);
+                    $matchResult = preg_match('~'.$normalizedPattern.'~', $currentAnswer);
+                    restore_error_handler();
+
+                    if ($matchResult !== 1) {
+                        $message = is_string($question['validationMessage'] ?? null) && trim($question['validationMessage']) !== ''
+                            ? trim((string) $question['validationMessage'])
+                            : 'Format jawaban tidak sesuai.';
+
+                        return back()
+                            ->withErrors(["answers.$name" => $message])
+                            ->withInput();
+                    }
+                }
+            }
+        }
+
+        $jawabanKuesioner = [];
+        foreach ($respondentQuestions as $question) {
+            if (! is_array($question)) {
+                continue;
+            }
+
+            $name = (string) ($question['name'] ?? '');
+            if ($name === '') {
+                continue;
+            }
+
+            $questionType = (string) ($question['type'] ?? 'text');
+            $currentAnswerRaw = $answers[$name] ?? '';
+            $storedValue = $questionType === 'checkbox'
+                ? (is_array($currentAnswerRaw)
+                    ? collect($currentAnswerRaw)->filter(static fn (mixed $value): bool => is_string($value))->map(static fn (string $value): string => trim($value))->filter(static fn (string $value): bool => $value !== '')->values()->all()
+                    : [])
+                : trim((string) $currentAnswerRaw);
+
+            $jawabanKuesioner[$name] = [
+                'label' => (string) ($question['label'] ?? ''),
+                'type' => $questionType,
+                'value' => $storedValue,
+            ];
+        }
+
+        $mitra->update([
+            'jawaban_kuesioner' => $jawabanKuesioner,
+            'status_wawancara' => 'Sudah Wawancara',
+            'terakhir_diakses_pada' => now(),
+        ]);
+
+        $request->session()->put('status_nik', $mitra->nik);
+
+        return redirect()
+            ->route('public.status')
+            ->with('success', 'Jawaban wawancara berhasil dikirim.');
+    }
+
+    public function saveSelectionDraft(Request $request, string $kode_akses): RedirectResponse
+    {
+        $mitra = $this->findMitraByAccessCode($kode_akses);
+
+        if ($mitra->kode_akses_kedaluwarsa_pada && $mitra->kode_akses_kedaluwarsa_pada->isPast()) {
+            abort(403, 'Kode akses telah kedaluwarsa.');
+        }
+
+        $formConfig = $this->activeFormConfig();
+        $respondentQuestions = collect($formConfig['questions'] ?? [])
+            ->filter(static function (mixed $question): bool {
+                if (! is_array($question)) {
+                    return false;
+                }
+
+                $isShowing = ! array_key_exists('is_showing', $question) || $question['is_showing'] !== false;
+                $isLabel = ($question['type'] ?? 'text') === 'label';
+
+                return $isShowing && ! $isLabel;
+            })
+            ->values();
+
+        $normalizedAnswers = (array) $request->input('answers', []);
+        foreach ($respondentQuestions as $question) {
+            if (! is_array($question) || (($question['type'] ?? 'text') !== 'checkbox')) {
+                continue;
+            }
+
+            $name = (string) ($question['name'] ?? '');
+            if ($name === '') {
+                continue;
+            }
+
+            if (! array_key_exists($name, $normalizedAnswers)) {
+                $normalizedAnswers[$name] = [];
+
+                continue;
+            }
+
+            $rawValue = $normalizedAnswers[$name];
+            if (is_string($rawValue)) {
+                $normalizedAnswers[$name] = [trim($rawValue)];
+
+                continue;
+            }
+
+            if (! is_array($rawValue)) {
+                $normalizedAnswers[$name] = [];
+            }
+        }
+
+        $request->merge([
+            'answers' => $normalizedAnswers,
+        ]);
+
+        $rules = [
+            'answers' => ['required', 'array'],
+        ];
+
+        foreach ($respondentQuestions as $question) {
+            if (! is_array($question)) {
+                continue;
+            }
+
+            $name = (string) ($question['name'] ?? '');
+            if ($name === '') {
+                continue;
+            }
+
+            $type = (string) ($question['type'] ?? 'text');
+            if ($type === 'checkbox') {
+                $fieldRules = ['nullable', 'array'];
+                if (($question['required'] ?? false) === true) {
+                    $fieldRules = ['required', 'array', 'min:1'];
+                }
+
+                $rules["answers.$name"] = $fieldRules;
+
+                if (is_array($question['options'] ?? null)) {
+                    $optionValues = collect($question['options'])
+                        ->filter(static fn (mixed $option): bool => is_array($option) && array_key_exists('value', $option))
+                        ->map(static fn (array $option): string => (string) $option['value'])
+                        ->values()
+                        ->all();
+
+                    if ($optionValues !== []) {
+                        $rules["answers.$name.*"] = ['string', Rule::in($optionValues)];
+                    }
+                }
+
+                continue;
+            }
+
+            $fieldRules = ['nullable', 'string'];
+            if (($question['required'] ?? false) === true) {
+                $fieldRules = ['required', 'string'];
+            }
+
+            if (($type === 'radio' || $type === 'select') && is_array($question['options'] ?? null)) {
+                $optionValues = collect($question['options'])
+                    ->filter(static fn (mixed $option): bool => is_array($option) && array_key_exists('value', $option))
+                    ->map(static fn (array $option): string => (string) $option['value'])
+                    ->values()
+                    ->all();
+
+                if ($optionValues !== []) {
+                    $fieldRules[] = Rule::in($optionValues);
+                }
+            }
+
+            $rules["answers.$name"] = $fieldRules;
+        }
+
+        $validated = $request->validate($rules);
+        $submittedAnswers = (array) ($validated['answers'] ?? []);
+        $jawabanKuesioner = [];
+
+        foreach ($respondentQuestions as $question) {
+            if (! is_array($question)) {
+                continue;
+            }
+
+            $name = (string) ($question['name'] ?? '');
+            if ($name === '') {
+                continue;
+            }
+
+            $questionType = (string) ($question['type'] ?? 'text');
+            $isValidation = ($question['is_validation'] ?? false) === true;
+            $pattern = is_string($question['validationRegex'] ?? null) ? trim($question['validationRegex']) : '';
+
+            if ($questionType !== 'checkbox' && $isValidation && $pattern !== '') {
+                $currentAnswerRaw = $submittedAnswers[$name] ?? '';
+                $currentAnswer = trim((string) $currentAnswerRaw);
+
+                if ($currentAnswer !== '') {
+                    $normalizedPattern = str_replace('~', '\\~', $pattern);
+                    set_error_handler(static fn () => true);
+                    $matchResult = preg_match('~'.$normalizedPattern.'~', $currentAnswer);
+                    restore_error_handler();
+
+                    if ($matchResult !== 1) {
+                        $message = is_string($question['validationMessage'] ?? null) && trim($question['validationMessage']) !== ''
+                            ? trim((string) $question['validationMessage'])
+                            : 'Format jawaban tidak sesuai.';
+
+                        return back()
+                            ->withErrors(["answers.$name" => $message])
+                            ->withInput();
+                    }
+                }
+            }
+
+            $currentAnswerRaw = $submittedAnswers[$name] ?? '';
+            $storedValue = $questionType === 'checkbox'
+                ? (is_array($currentAnswerRaw)
+                    ? collect($currentAnswerRaw)->filter(static fn (mixed $value): bool => is_string($value))->map(static fn (string $value): string => trim($value))->filter(static fn (string $value): bool => $value !== '')->values()->all()
+                    : [])
+                : trim((string) $currentAnswerRaw);
+
+            $jawabanKuesioner[$name] = [
+                'label' => (string) ($question['label'] ?? ''),
+                'type' => $questionType,
+                'value' => $storedValue,
+            ];
+        }
+
+        $mitra->update([
+            'jawaban_kuesioner' => $jawabanKuesioner,
+            'terakhir_diakses_pada' => now(),
+        ]);
+
+        return back()->with('success', 'Jawaban sementara berhasil disimpan.');
     }
 
     private function findMitraByAccessCode(string $kodeAkses): ApplicantProfile
