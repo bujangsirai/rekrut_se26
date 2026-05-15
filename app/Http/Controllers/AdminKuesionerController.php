@@ -84,6 +84,29 @@ class AdminKuesionerController extends Controller
             ->with('success', 'Struktur kuesioner berhasil diperbarui.');
     }
 
+    public function edit(int $kuesioner): Response
+    {
+        $row = DB::table('mitra_kuesioner')
+            ->select(['id', 'structure', 'status', 'created_at'])
+            ->where('id', $kuesioner)
+            ->first();
+
+        if (! $row) {
+            abort(404);
+        }
+
+        $decodedStructure = json_decode($row->structure, true);
+
+        return Inertia::render('AdminKuesionerEditPage', [
+            'kuesioner' => [
+                'id' => (int) $row->id,
+                'status' => $row->status,
+                'structure' => is_array($decodedStructure) ? $decodedStructure : null,
+                'created_at' => $row->created_at,
+            ],
+        ]);
+    }
+
     private function validateStructureContent(string $structure): ?string
     {
         /** @var mixed $decodedStructure */

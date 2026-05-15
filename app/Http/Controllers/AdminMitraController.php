@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -20,7 +21,32 @@ class AdminMitraController extends Controller
 {
     public function index(Request $request): Response
     {
-        $mitra = ApplicantProfile::query()
+        [$mitra, $kecamatanOptions, $desaOptions] = $this->buildMitraPageData(false);
+
+        return Inertia::render('AdminMitraPage', [
+            'mitra' => $mitra,
+            'kecamatanOptions' => $kecamatanOptions,
+            'desaOptions' => $desaOptions,
+        ]);
+    }
+
+    public function seleksiMitra(Request $request): Response
+    {
+        [$mitra, $kecamatanOptions, $desaOptions] = $this->buildMitraPageData(true);
+
+        return Inertia::render('AdminSeleksiMitraPage', [
+            'mitra' => $mitra,
+            'kecamatanOptions' => $kecamatanOptions,
+            'desaOptions' => $desaOptions,
+        ]);
+    }
+
+    /**
+     * @return array{0: Collection<int, array<string, mixed>>, 1: Collection<int, array{kode_kec: string, nama_kec: string}>, 2: Collection<int, array{kode_kec: string, kode_desa: string, nama_desa: string}>}
+     */
+    private function buildMitraPageData(bool $onlySobatSudah): array
+    {
+        $mitraQuery = ApplicantProfile::query()
             ->select([
                 'mitra.*',
                 'mkd_ktp.nama_kec as nama_kec_ktp',
@@ -55,7 +81,13 @@ class AdminMitraController extends Controller
             ->leftJoin('mitra_berkas as mb_sobat', function ($join) {
                 $join->on('mitra.nik', '=', 'mb_sobat.nik')
                     ->where('mb_sobat.jenis_berkas', '=', 'upload_sobat');
-            }, null, null)
+            }, null, null);
+
+        if ($onlySobatSudah) {
+            $mitraQuery->where('mitra.status_sobat', 'Sudah');
+        }
+
+        $mitra = $mitraQuery
             ->latest('mitra.id')
             ->get()
             ->map(static fn (object $item): array => [
@@ -118,11 +150,7 @@ class AdminMitraController extends Controller
             ])
             ->values();
 
-        return Inertia::render('AdminMitraPage', [
-            'mitra' => $mitra,
-            'kecamatanOptions' => $kecamatanOptions,
-            'desaOptions' => $desaOptions,
-        ]);
+        return [$mitra, $kecamatanOptions, $desaOptions];
     }
 
     public function export()

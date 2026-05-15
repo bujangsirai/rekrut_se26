@@ -69,6 +69,8 @@ Route::middleware('auth')->group(function () {
                 ->name('admin.users.destroy');
             Route::get('/kuesioner', [AdminKuesionerController::class, 'index'])
                 ->name('admin.kuesioner.index');
+            Route::get('/kuesioner/{kuesioner}/edit', [AdminKuesionerController::class, 'edit'])
+                ->name('admin.kuesioner.edit');
             Route::post('/kuesioner', [AdminKuesionerController::class, 'store'])
                 ->name('admin.kuesioner.store');
             Route::put('/kuesioner/{kuesioner}', [AdminKuesionerController::class, 'update'])
@@ -76,6 +78,8 @@ Route::middleware('auth')->group(function () {
         });
         Route::get('/mitra', [AdminMitraController::class, 'index'])
             ->name('admin.mitra.index');
+        Route::get('/seleksi_mitra', [AdminMitraController::class, 'seleksiMitra'])
+            ->name('admin.mitra.seleksi');
         Route::get('/mitra/export', [AdminMitraController::class, 'export'])
             ->name('admin.mitra.export');
         Route::get('/file/{payload}', [AdminMitraController::class, 'file'])

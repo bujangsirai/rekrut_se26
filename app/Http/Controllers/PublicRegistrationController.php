@@ -339,8 +339,29 @@ class PublicRegistrationController extends Controller
             ]);
         }
 
-        return Inertia::render('SelectionStatusPage', [
+        $activeKuesioner = DB::table('mitra_kuesioner')
+            ->select(['structure'])
+            ->where('status', 'active')
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->first();
+
+        $decodedStructure = $activeKuesioner ? json_decode($activeKuesioner->structure, true) : null;
+        $formConfig = is_array($decodedStructure)
+            ? $decodedStructure
+            : [
+                'title' => 'Form Wawancara',
+                'description' => '',
+                'questions' => [],
+            ];
+
+        if (! array_key_exists('questions', $formConfig) || ! is_array($formConfig['questions'])) {
+            $formConfig['questions'] = [];
+        }
+
+        return Inertia::render('WawancaraMulaiPage', [
             'mitra' => $mitra,
+            'formConfig' => $formConfig,
         ]);
     }
 }

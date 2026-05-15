@@ -39,7 +39,7 @@ Minimal required fields per question:
 
 - `name` (string, unique in one form)
 - `label` (string)
-- `type` (`text` | `textarea` | `select` | `radio`)
+- `type` (`text` | `textarea` | `select` | `radio` | `label`)
 - `scoring` (number)
 
 Optional fields:
@@ -51,6 +51,10 @@ Optional fields:
 - `maxLength` (number)
 - `options` (array of `{ label, value }`, required for `radio/select`)
 - `scoringOptions` (array of `{ label, score }`)
+
+Special behavior:
+
+- If `type` is `label`, field `label` will be rendered as HTML in page `WawancaraMulaiPage.vue` using `v-html`.
 
 ## Scoring Modes in Admin UI
 

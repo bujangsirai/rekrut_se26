@@ -22,10 +22,18 @@
         },
         {
             "key": "mitra",
-            "title": "Daftar Mitra",
+            "title": "Mitra (Semua)",
             "level": 2,
             "section": "seleksi_mitra",
             "href": "/admin/mitra",
+            "icon": "clipboard-list"
+        },
+        {
+            "key": "mitra",
+            "title": "Mitra (Lulus Adm)",
+            "level": 2,
+            "section": "seleksi_mitra",
+            "href": "/admin/seleksi_mitra",
             "icon": "clipboard-list"
         },
         {
