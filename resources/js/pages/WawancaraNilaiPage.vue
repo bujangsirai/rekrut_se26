@@ -16,15 +16,21 @@ interface QuestionOption {
 interface QuestionConfig {
     name: string;
     label: string;
+    value?: string;
     type: 'radio' | 'select' | 'textarea' | 'text' | 'label';
-    scoring?: number;
+    is_showing?: boolean;
+    is_scoring?: boolean;
     required?: boolean;
     placeholder?: string;
     helpText?: string;
-    rows?: number;
-    maxLength?: number;
+    validationRegex?: string;
+    validationMessage?: string;
     options?: QuestionOption[];
     scoringOptions?: ScoringOption[];
+}
+
+function getLabelHtml(question: QuestionConfig): string {
+    return question.label || question.value || '';
 }
 
 interface SelectionFormConfig {
@@ -97,8 +103,8 @@ const questionNumbers = computed(() => {
                     <div v-for="(question, index) in props.formConfig.questions" :key="question.name" class="space-y-3">
                         <div
                             v-if="question.type === 'label'"
-                            class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-800"
-                            v-html="question.label"
+                            class="rounded-md bg-slate-50 px-3 py-2 text-slate-800 [&_a]:text-cyan-700 [&_a]:underline [&_h1]:mb-2 [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:leading-tight [&_h2]:mb-2 [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:leading-tight [&_h3]:mb-2 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:leading-tight [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:text-sm [&_p]:leading-6 [&_ul]:list-disc [&_ul]:pl-5"
+                            v-html="getLabelHtml(question)"
                         />
 
                         <template v-else>
@@ -110,7 +116,7 @@ const questionNumbers = computed(() => {
                                 Jawaban responden ditampilkan di sini (menunggu integrasi penyimpanan jawaban).
                             </div>
 
-                            <div v-if="(question.scoringOptions ?? []).length" class="space-y-2">
+                            <div v-if="question.is_scoring && (question.scoringOptions ?? []).length" class="space-y-2">
                                 <p class="text-sm font-semibold text-slate-700">Pilih penilaian:</p>
                                 <label
                                     v-for="option in question.scoringOptions ?? []"
@@ -128,9 +134,8 @@ const questionNumbers = computed(() => {
                                 </label>
                             </div>
 
-                            <div v-else class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                                Pertanyaan ini tidak memiliki <code>scoringOptions</code>. Skor default:
-                                <span class="font-semibold">{{ question.scoring ?? 0 }}</span>
+                            <div v-else-if="question.is_scoring" class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                                Pertanyaan ini ditandai scoring, tetapi <code>scoringOptions</code> belum diisi.
                             </div>
                         </template>
                     </div>

@@ -6,10 +6,9 @@ import UpdateMitraDialog from '@/components/mitra/UpdateMitraDialog.vue';
 import LayoutAdmin from '@/components/layouts/LayoutAdmin.vue';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
-import type { ColumnDef } from '@tanstack/vue-table';
 import { Head, router } from '@inertiajs/vue3';
-import { Download, Pencil } from 'lucide-vue-next';
-import { computed, h, ref } from 'vue';
+import { Download } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 import mitraRoute from '@/routes/admin/mitra';
 
 const props = defineProps<{
@@ -109,36 +108,10 @@ const tableColumns = getMitraColumns({
     isMitraKepkaUpdating,
 });
 
-const periksaMitraColumn: ColumnDef<MitraItem> = {
-    id: 'periksa_mitra',
-    header: () => h('span', { class: 'text-xs font-semibold' }, 'Penilaian'),
-    cell: ({ row }) =>
-        h(
-            'a',
-            {
-                href: `/admin/penilaian/${row.original.kode_akses}`,
-                target: '_blank',
-                rel: 'noopener noreferrer',
-                class: 'inline-flex items-center text-green-600 transition hover:text-green-700',
-                title: 'Penilaian',
-            },
-            [h(Pencil, { class: 'h-4 w-4' })],
-        ),
-    enableSorting: false,
-    enableColumnFilter: false,
-    meta: { hideOnMobile: true, cellClass: 'min-w-[80px]' },
-};
-
-const tableColumnsWithPeriksaMitra = computed(() => {
-    const columnsWithoutSobat = tableColumns.filter((column) => {
+const tableColumnsWithoutSobat = computed(() => {
+    return tableColumns.filter((column) => {
         return (column as { accessorKey?: string }).accessorKey !== 'status_sobat';
     });
-    const actionsColumn = columnsWithoutSobat.at(-1);
-    const nonActionsColumns = actionsColumn ? columnsWithoutSobat.slice(0, -1) : columnsWithoutSobat;
-
-    return actionsColumn
-        ? [...nonActionsColumns, periksaMitraColumn, actionsColumn]
-        : [...nonActionsColumns, periksaMitraColumn];
 });
 
 const domisiliKecamatanFilters = computed(() => [
@@ -166,7 +139,7 @@ const domisiliKecamatanFilters = computed(() => [
         <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <DataTable
                 :data="mitra"
-                :columns="tableColumnsWithPeriksaMitra"
+                :columns="tableColumnsWithoutSobat"
                 search-placeholder="Cari nama atau NIK..."
                 :search-fields="['nama_lengkap', 'nik']"
                 :toolbar-filters="domisiliKecamatanFilters"

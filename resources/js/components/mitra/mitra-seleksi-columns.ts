@@ -277,6 +277,43 @@ export const getMitraColumns = (actions: {
         },
     },
     {
+        accessorKey: 'skor_kuesioner',
+        header: () => h('span', { class: 'text-xs font-semibold' }, 'Skore'),
+        enableSorting: true,
+        cell: ({ row }) => {
+            if (row.original.skor_kuesioner === null) {
+                return null;
+            }
+
+            return h('span', { class: 'text-xs font-semibold text-slate-800' }, String(row.original.skor_kuesioner));
+        },
+        meta: { hideOnMobile: true },
+    },
+    {
+        id: 'periksa_mitra',
+        header: () => h('span', { class: 'text-xs font-semibold' }, 'Penilaian'),
+        cell: ({ row }) => {
+            if (row.original.jawaban_kuesioner === null) {
+                return null;
+            }
+
+            return h(
+                'a',
+                {
+                    href: `/admin/penilaian/${row.original.kode_akses}`,
+                    target: '_blank',
+                    rel: 'noopener noreferrer',
+                    class: 'inline-flex items-center text-green-600 transition hover:text-green-700',
+                    title: 'Penilaian',
+                },
+                [h(Pencil, { class: 'h-4 w-4' })],
+            );
+        },
+        enableSorting: false,
+        enableColumnFilter: false,
+        meta: { hideOnMobile: true, cellClass: 'min-w-[80px]' },
+    },
+    {
         id: 'actions',
         header: '',
         cell: ({ row }) =>

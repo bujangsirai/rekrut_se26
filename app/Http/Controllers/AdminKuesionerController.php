@@ -116,13 +116,65 @@ class AdminKuesionerController extends Controller
         }
 
         foreach ($decodedStructure['questions'] as $index => $question) {
-            if (! is_array($question) || ! array_key_exists('scoring', $question) || ! is_numeric($question['scoring'])) {
-                return sprintf('Pertanyaan ke-%d wajib memiliki props "scoring" berupa angka.', $index + 1);
+            if (! is_array($question)) {
+                return sprintf('Pertanyaan ke-%d tidak valid.', $index + 1);
             }
 
-            if (array_key_exists('scoringOptions', $question)) {
-                if (! is_array($question['scoringOptions']) || $question['scoringOptions'] === []) {
-                    return sprintf('Pertanyaan ke-%d memiliki "scoringOptions" yang tidak valid.', $index + 1);
+            if (! array_key_exists('is_scoring', $question) || ! is_bool($question['is_scoring'])) {
+                return sprintf('Pertanyaan ke-%d wajib memiliki props "is_scoring" bernilai boolean.', $index + 1);
+            }
+
+            if (! array_key_exists('is_showing', $question) || ! is_bool($question['is_showing'])) {
+                return sprintf('Pertanyaan ke-%d wajib memiliki props "is_showing" bernilai boolean.', $index + 1);
+            }
+
+            if (! array_key_exists('is_validation', $question) || ! is_bool($question['is_validation'])) {
+                return sprintf('Pertanyaan ke-%d wajib memiliki props "is_validation" bernilai boolean.', $index + 1);
+            }
+
+            if (array_key_exists('rows', $question)) {
+                return sprintf('Pertanyaan ke-%d tidak boleh menggunakan props "rows".', $index + 1);
+            }
+
+            if (array_key_exists('maxLength', $question)) {
+                return sprintf('Pertanyaan ke-%d tidak boleh menggunakan props "maxLength".', $index + 1);
+            }
+
+            if (
+                array_key_exists('type', $question)
+                && $question['type'] === 'label'
+                && $question['is_validation']
+            ) {
+                return sprintf('Pertanyaan ke-%d bertipe "label" tidak boleh menggunakan validasi.', $index + 1);
+            }
+
+            if ($question['is_validation']) {
+                if (! array_key_exists('validationRegex', $question) || ! is_string($question['validationRegex']) || trim($question['validationRegex']) === '') {
+                    return sprintf('Pertanyaan ke-%d wajib memiliki "validationRegex" saat "is_validation" bernilai true.', $index + 1);
+                }
+
+                $normalizedPattern = str_replace('~', '\\~', $question['validationRegex']);
+                set_error_handler(static fn () => true);
+                $isValidRegex = preg_match('~'.$normalizedPattern.'~', '') !== false;
+                restore_error_handler();
+
+                if (! $isValidRegex) {
+                    return sprintf('Pertanyaan ke-%d memiliki pola "validationRegex" yang tidak valid.', $index + 1);
+                }
+
+                if (array_key_exists('validationMessage', $question) && ! is_string($question['validationMessage'])) {
+                    return sprintf('Pertanyaan ke-%d memiliki "validationMessage" yang tidak valid.', $index + 1);
+                }
+            } elseif (
+                (array_key_exists('validationRegex', $question) && is_string($question['validationRegex']) && trim($question['validationRegex']) !== '')
+                || (array_key_exists('validationMessage', $question) && is_string($question['validationMessage']) && trim($question['validationMessage']) !== '')
+            ) {
+                return sprintf('Pertanyaan ke-%d tidak boleh memiliki rule validasi saat "is_validation" bernilai false.', $index + 1);
+            }
+
+            if ($question['is_scoring']) {
+                if (! array_key_exists('scoringOptions', $question) || ! is_array($question['scoringOptions']) || $question['scoringOptions'] === []) {
+                    return sprintf('Pertanyaan ke-%d wajib memiliki "scoringOptions" saat "is_scoring" bernilai true.', $index + 1);
                 }
 
                 foreach ($question['scoringOptions'] as $optionIndex => $scoringOption) {
@@ -141,6 +193,8 @@ class AdminKuesionerController extends Controller
                         );
                     }
                 }
+            } elseif (array_key_exists('scoringOptions', $question) && is_array($question['scoringOptions']) && $question['scoringOptions'] !== []) {
+                return sprintf('Pertanyaan ke-%d tidak boleh memiliki "scoringOptions" saat "is_scoring" bernilai false.', $index + 1);
             }
         }
 

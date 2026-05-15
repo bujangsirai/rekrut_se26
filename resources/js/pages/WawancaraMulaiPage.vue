@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { reactive } from 'vue';
+import { computed, reactive } from 'vue';
 
 defineOptions({
     // @ts-ignore
@@ -15,14 +15,21 @@ interface QuestionOption {
 interface QuestionConfig {
     name: string;
     label: string;
+    value?: string;
     type: 'radio' | 'select' | 'textarea' | 'text' | 'label';
-    scoring?: number;
+    is_showing?: boolean;
+    is_scoring?: boolean;
+    is_validation?: boolean;
     required?: boolean;
     placeholder?: string;
     helpText?: string;
-    rows?: number;
-    maxLength?: number;
+    validationRegex?: string;
+    validationMessage?: string;
     options?: QuestionOption[];
+}
+
+function getLabelHtml(question: QuestionConfig): string {
+    return question.label || question.value || '';
 }
 
 interface SelectionFormConfig {
@@ -31,6 +38,7 @@ interface SelectionFormConfig {
     questions: QuestionConfig[];
 }
 const answers = reactive<Record<string, string>>({});
+const answerErrors = reactive<Record<string, string>>({});
 
 const props = defineProps<{
     mitra: {
@@ -45,6 +53,57 @@ const props = defineProps<{
 
 for (const question of props.formConfig.questions ?? []) {
     answers[question.name] = '';
+    answerErrors[question.name] = '';
+}
+
+const respondentQuestions = computed(() => {
+    return (props.formConfig.questions ?? []).filter((question) => question.is_showing !== false);
+});
+
+const respondentQuestionNumbers = computed(() => {
+    const numbers: Record<string, number> = {};
+    let current = 0;
+
+    for (const question of respondentQuestions.value) {
+        if (question.type !== 'label') {
+            current += 1;
+            numbers[question.name] = current;
+        }
+    }
+
+    return numbers;
+});
+
+function validateAnswerOnKeyup(question: QuestionConfig): void {
+    if (question.type === 'label') {
+        return;
+    }
+
+    if (!question.is_validation) {
+        answerErrors[question.name] = '';
+        return;
+    }
+
+    const pattern = question.validationRegex?.trim();
+    if (!pattern) {
+        answerErrors[question.name] = '';
+        return;
+    }
+
+    const currentValue = answers[question.name] ?? '';
+    if (currentValue === '') {
+        answerErrors[question.name] = '';
+        return;
+    }
+
+    try {
+        const regex = new RegExp(pattern);
+        answerErrors[question.name] = regex.test(currentValue)
+            ? ''
+            : (question.validationMessage?.trim() || 'Format jawaban tidak sesuai.');
+    } catch {
+        answerErrors[question.name] = 'Konfigurasi RegExp tidak valid.';
+    }
 }
 </script>
 
@@ -72,14 +131,14 @@ for (const question of props.formConfig.questions ?? []) {
                     </div>
 
                     <div class="grid gap-5">
-                        <div v-for="(question, index) in props.formConfig.questions" :key="question.name" class="space-y-2">
+                        <div v-for="question in respondentQuestions" :key="question.name" class="space-y-2">
                             <div
                                 v-if="question.type === 'label'"
-                                class="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-800"
-                                v-html="question.label"
+                                class="rounded-md bg-slate-50 px-3 py-2 text-slate-800 [&_a]:text-cyan-700 [&_a]:underline [&_h1]:mb-2 [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:leading-tight [&_h2]:mb-2 [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:leading-tight [&_h3]:mb-2 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:leading-tight [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:text-sm [&_p]:leading-6 [&_ul]:list-disc [&_ul]:pl-5"
+                                v-html="getLabelHtml(question)"
                             />
                             <label v-if="question.type !== 'label'" :for="question.name" class="text-sm font-semibold text-slate-800">
-                                {{ index + 1 }}. {{ question.label }}<span v-if="question.required">*</span>
+                                {{ respondentQuestionNumbers[question.name] }}. {{ question.label }}<span v-if="question.required">*</span>
                             </label>
 
                             <div v-if="question.type === 'radio'" class="flex flex-wrap gap-3">
@@ -115,10 +174,10 @@ for (const question of props.formConfig.questions ?? []) {
                                 v-else-if="question.type === 'textarea'"
                                 :id="question.name"
                                 v-model="answers[question.name]"
-                                :rows="question.rows ?? 4"
-                                :maxlength="question.maxLength"
+                                rows="4"
                                 class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-cyan-500"
                                 :placeholder="question.placeholder ?? 'Tulis jawaban Anda di sini...'"
+                                @keyup="validateAnswerOnKeyup(question)"
                             />
 
                             <input
@@ -126,16 +185,19 @@ for (const question of props.formConfig.questions ?? []) {
                                 :id="question.name"
                                 v-model="answers[question.name]"
                                 type="text"
-                                :maxlength="question.maxLength"
                                 class="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none focus:border-cyan-500"
                                 :placeholder="question.placeholder ?? 'Tulis jawaban...'"
+                                @keyup="validateAnswerOnKeyup(question)"
                             />
 
+                            <p v-if="answerErrors[question.name]" class="text-xs text-red-600">
+                                {{ answerErrors[question.name] }}
+                            </p>
                             <p v-if="question.helpText && question.type !== 'label'" class="text-xs text-slate-500">
                                 {{ question.helpText }}
                             </p>
                         </div>
-                        <p v-if="!props.formConfig.questions.length" class="text-sm text-slate-500">Belum ada pertanyaan aktif saat ini.</p>
+                        <p v-if="!respondentQuestions.length" class="text-sm text-slate-500">Belum ada pertanyaan aktif saat ini.</p>
                     </div>
 
                     <div class="flex justify-end">

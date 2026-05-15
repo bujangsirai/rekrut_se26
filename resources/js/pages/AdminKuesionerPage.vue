@@ -8,7 +8,6 @@ import { useForm } from '@tanstack/vue-form';
 import { computed, ref } from 'vue';
 
 type QuestionType = 'radio' | 'select' | 'textarea' | 'text' | 'label';
-type ScoringMode = 'fixed' | 'options';
 
 interface QuestionOption {
     label: string;
@@ -23,14 +22,17 @@ interface ScoringOption {
 interface QuestionStructure {
     name: string;
     label: string;
+    value?: string;
     type: QuestionType;
-    scoring: number;
+    is_showing?: boolean;
+    is_scoring?: boolean;
+    is_validation?: boolean;
     scoringOptions?: ScoringOption[];
     required?: boolean;
     placeholder?: string;
     helpText?: string;
-    rows?: number;
-    maxLength?: number;
+    validationRegex?: string;
+    validationMessage?: string;
     options?: QuestionOption[];
 }
 
@@ -41,12 +43,13 @@ interface BuilderQuestion {
     required: boolean;
     placeholder: string;
     helpText: string;
-    rows: number;
-    maxLength: number | null;
-    scoring: number;
-    scoringMode: ScoringMode;
+    isShowing: boolean;
+    isScoring: boolean;
+    isValidation: boolean;
     optionsText: string;
     scoringOptionsText: string;
+    validationRegex: string;
+    validationMessage: string;
 }
 
 interface KuesionerStructure {
@@ -108,12 +111,13 @@ function createEmptyQuestion(index: number): BuilderQuestion {
         required: true,
         placeholder: '',
         helpText: '',
-        rows: 4,
-        maxLength: null,
-        scoring: 0,
-        scoringMode: 'fixed',
+        isShowing: true,
+        isScoring: false,
+        isValidation: false,
         optionsText: 'Ya|ya\nTidak|tidak',
         scoringOptionsText: 'Best answer|10\nGood answer|8\nBad answer|3',
+        validationRegex: '',
+        validationMessage: '',
     };
 }
 
@@ -135,20 +139,23 @@ function formatScoringOptionsText(options?: ScoringOption[]): string {
 
 function toBuilderQuestion(question: QuestionStructure, index: number): BuilderQuestion {
     const hasScoringOptions = Array.isArray(question.scoringOptions) && question.scoringOptions.length > 0;
+    const hasLegacyScoring = typeof (question as { scoring?: unknown }).scoring === 'number';
+    const hasLegacyValidationRegex = typeof question.validationRegex === 'string' && question.validationRegex.trim() !== '';
 
     return {
         name: question.name || `pertanyaan_${index + 1}`,
-        label: question.label || '',
+        label: question.label || question.value || '',
         type: question.type || 'text',
         required: question.required ?? true,
         placeholder: question.placeholder ?? '',
         helpText: question.helpText ?? '',
-        rows: question.rows ?? 4,
-        maxLength: question.maxLength ?? null,
-        scoring: Number.isFinite(question.scoring) ? question.scoring : 0,
-        scoringMode: hasScoringOptions ? 'options' : 'fixed',
+        isShowing: question.is_showing ?? true,
+        isScoring: question.is_scoring ?? (hasScoringOptions || hasLegacyScoring),
+        isValidation: question.is_validation ?? hasLegacyValidationRegex,
         optionsText: formatOptionsText(question.options),
         scoringOptionsText: formatScoringOptionsText(question.scoringOptions),
+        validationRegex: question.validationRegex ?? '',
+        validationMessage: question.validationMessage ?? '',
     };
 }
 
@@ -198,7 +205,8 @@ function parseScoringOptions(rawOptions: string): ScoringOption[] {
         .map((line) => {
             const [labelRaw, scoreRaw] = line.split('|');
             const label = (labelRaw ?? '').trim();
-            const score = Number.parseInt((scoreRaw ?? '').trim(), 10);
+            const scoreToken = (scoreRaw ?? '').trim();
+            const score = /^-?\d+$/.test(scoreToken) ? Number(scoreToken) : Number.NaN;
 
             return {
                 label,
@@ -275,7 +283,9 @@ function buildStructure(validate = false): KuesionerStructure | null {
             label,
             type: source.type,
             required: source.required,
-            scoring: Number.isFinite(source.scoring) ? Math.max(0, source.scoring) : 0,
+            is_showing: source.isShowing,
+            is_scoring: source.isScoring,
+            is_validation: source.type === 'label' ? false : source.isValidation,
         };
 
         if (source.placeholder.trim()) {
@@ -284,14 +294,6 @@ function buildStructure(validate = false): KuesionerStructure | null {
 
         if (source.helpText.trim()) {
             question.helpText = source.helpText.trim();
-        }
-
-        if (source.maxLength && source.maxLength > 0) {
-            question.maxLength = source.maxLength;
-        }
-
-        if (source.type === 'textarea') {
-            question.rows = source.rows > 0 ? source.rows : 4;
         }
 
         if (source.type === 'radio' || source.type === 'select') {
@@ -306,7 +308,7 @@ function buildStructure(validate = false): KuesionerStructure | null {
             }
         }
 
-        if (source.scoringMode === 'options') {
+        if (question.is_scoring) {
             const parsedScoringOptions = parseScoringOptions(source.scoringOptionsText);
             if (validate && !parsedScoringOptions.length) {
                 builderError.value = `Opsi scoring pertanyaan ke-${index + 1} wajib diisi (format: label|skor).`;
@@ -315,7 +317,31 @@ function buildStructure(validate = false): KuesionerStructure | null {
 
             if (parsedScoringOptions.length) {
                 question.scoringOptions = parsedScoringOptions;
-                question.scoring = Math.max(...parsedScoringOptions.map((option) => option.score));
+            }
+        }
+
+        if (question.is_validation) {
+            const regexPattern = source.validationRegex.trim();
+            if (validate && regexPattern === '') {
+                builderError.value = `RegExp pertanyaan ke-${index + 1} wajib diisi saat validasi aktif.`;
+                return null;
+            }
+
+            if (regexPattern === '') {
+                normalizedQuestions.push(question);
+                continue;
+            }
+
+            try {
+                new RegExp(regexPattern);
+            } catch {
+                builderError.value = `RegExp pertanyaan ke-${index + 1} tidak valid.`;
+                return null;
+            }
+
+            question.validationRegex = regexPattern;
+            if (source.validationMessage.trim() !== '') {
+                question.validationMessage = source.validationMessage.trim();
             }
         }
 
@@ -501,35 +527,27 @@ function saveStructure(): void {
                                     />
                                 </label>
 
-                                <label class="space-y-1 md:col-span-2">
+                                <label v-if="question.type !== 'label'" class="space-y-1">
                                     <span class="text-xs font-medium text-slate-700">Placeholder (opsional)</span>
                                     <input v-model="question.placeholder" type="text" class="h-9 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-cyan-500" />
                                 </label>
 
-                                <label class="space-y-1 md:col-span-2">
+                                <label v-if="question.type !== 'label'" class="space-y-1">
                                     <span class="text-xs font-medium text-slate-700">Help Text (opsional)</span>
                                     <input v-model="question.helpText" type="text" class="h-9 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-cyan-500" />
                                 </label>
 
-                                <label class="space-y-1">
-                                    <span class="text-xs font-medium text-slate-700">Max Length (opsional)</span>
-                                    <input v-model.number="question.maxLength" type="number" min="1" class="h-9 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-cyan-500" />
+                                <label class="inline-flex items-center gap-2 md:col-span-2">
+                                    <input v-model="question.isShowing" type="checkbox" class="h-4 w-4 accent-cyan-600" />
+                                    <span class="text-sm text-slate-700">Tampilkan ke responden (jika nonaktif, hanya assessor)</span>
                                 </label>
 
-                                <label class="space-y-1">
-                                    <span class="text-xs font-medium text-slate-700">Mode Scoring</span>
-                                    <select v-model="question.scoringMode" class="h-9 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-cyan-500">
-                                        <option value="fixed">Skor tunggal</option>
-                                        <option value="options">Opsi skor</option>
-                                    </select>
+                                <label class="inline-flex items-center gap-2 md:col-span-2">
+                                    <input v-model="question.isScoring" type="checkbox" class="h-4 w-4 accent-cyan-600" />
+                                    <span class="text-sm text-slate-700">Gunakan scoring (opsi skor integer)</span>
                                 </label>
 
-                                <label v-if="question.scoringMode === 'fixed'" class="space-y-1">
-                                    <span class="text-xs font-medium text-slate-700">Scoring (Integer)</span>
-                                    <input v-model.number="question.scoring" type="number" min="0" class="h-9 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-cyan-500" />
-                                </label>
-
-                                <label v-else class="space-y-1 md:col-span-2">
+                                <label v-if="question.isScoring" class="space-y-1 md:col-span-2">
                                     <span class="text-xs font-medium text-slate-700">Opsi Scoring (1 baris = `label|skor`)</span>
                                     <textarea
                                         v-model="question.scoringOptionsText"
@@ -538,9 +556,29 @@ function saveStructure(): void {
                                     />
                                 </label>
 
-                                <label v-if="question.type === 'textarea'" class="space-y-1">
-                                    <span class="text-xs font-medium text-slate-700">Rows</span>
-                                    <input v-model.number="question.rows" type="number" min="1" class="h-9 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-cyan-500" />
+                                <label v-if="question.type !== 'label'" class="inline-flex items-center gap-2 md:col-span-2">
+                                    <input v-model="question.isValidation" type="checkbox" class="h-4 w-4 accent-cyan-600" />
+                                    <span class="text-sm text-slate-700">Gunakan validasi RegExp</span>
+                                </label>
+
+                                <label v-if="question.type !== 'label' && question.isValidation" class="space-y-1">
+                                    <span class="text-xs font-medium text-slate-700">RegExp Validasi (opsional)</span>
+                                    <input
+                                        v-model="question.validationRegex"
+                                        type="text"
+                                        class="h-9 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-cyan-500"
+                                        placeholder="contoh: ^[0-9]{16}$"
+                                    />
+                                </label>
+
+                                <label v-if="question.type !== 'label' && question.isValidation" class="space-y-1">
+                                    <span class="text-xs font-medium text-slate-700">Pesan Error Validasi (opsional)</span>
+                                    <input
+                                        v-model="question.validationMessage"
+                                        type="text"
+                                        class="h-9 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-cyan-500"
+                                        placeholder="Input tidak sesuai format."
+                                    />
                                 </label>
 
                                 <label v-if="question.type === 'radio' || question.type === 'select'" class="space-y-1 md:col-span-2">
@@ -548,7 +586,7 @@ function saveStructure(): void {
                                     <textarea v-model="question.optionsText" rows="3" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-cyan-500" />
                                 </label>
 
-                                <label class="inline-flex items-center gap-2 md:col-span-2">
+                                <label v-if="question.type !== 'label'" class="inline-flex items-center gap-2 md:col-span-2">
                                     <input v-model="question.required" type="checkbox" class="h-4 w-4 accent-cyan-600" />
                                     <span class="text-sm text-slate-700">Required</span>
                                 </label>

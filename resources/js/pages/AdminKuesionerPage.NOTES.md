@@ -1,29 +1,25 @@
 # Admin Kuesioner Notes
 
-This note explains how questionnaire JSON is built and saved from `AdminKuesionerPage.vue`.
+This note explains the current questionnaire JSON contract used by:
 
-## Where It Is Used
+- `resources/js/pages/AdminKuesionerPage.vue`
+- `resources/js/pages/AdminKuesionerEditPage.vue`
+- `resources/js/pages/WawancaraMulaiPage.vue`
+- `resources/js/pages/WawancaraNilaiPage.vue`
+- `app/Http/Controllers/AdminKuesionerController.php`
 
-- Admin builder UI: `resources/js/pages/AdminKuesionerPage.vue`
-- Save + validation: `app/Http/Controllers/AdminKuesionerController.php`
-- DB table: `mitra_kuesioner`
-- `id`
-- `structure` (JSON string)
-- `status` (`active` or `inactive`)
+## View Mapping
 
-## Current Admin UI Flow
+- `resources/js/pages/WawancaraMulaiPage.vue` = **Respondent View**
+- `resources/js/pages/WawancaraNilaiPage.vue` = **Assessor View**
 
-- Halaman utama hanya menampilkan:
-  - tombol `Tambah Kuesioner`
-  - tabel `Riwayat Kuesioner Tersimpan`
-- Saat klik `Tambah Kuesioner`, form builder dibuka dalam modal (mode create).
-- Field `Judul Form` dan `Deskripsi Form` memakai `TanStackInput`.
-- Preview JSON tidak ditampilkan saat proses tambah kuesioner (sesuai penyederhanaan UI).
-- Kolom tabel utama: `Judul`, `Deskripsi`, `Jumlah Pertanyaan`, `Status`, dan tombol aksi `Modified Form`.
-- Tombol `Modified Form` membuka modal edit untuk kuesioner baris tersebut (title/description + edit pertanyaan).
-- Saat create, `status` tidak diinput dari UI dan otomatis disimpan sebagai `inactive`.
+Current rendering behavior:
 
-## JSON Structure (Top Level)
+- Respondent view only renders questions with `is_showing = true`.
+- Assessor view renders all questions, including `is_showing = false`.
+- So `is_showing = false` means hidden from respondent, but still visible to assessor.
+
+## Top-Level JSON
 
 ```json
 {
@@ -33,78 +29,126 @@ This note explains how questionnaire JSON is built and saved from `AdminKuesione
 }
 ```
 
-## Question Structure
+## Question Structure (Refactored)
 
-Minimal required fields per question:
+Required fields per question:
 
 - `name` (string, unique in one form)
 - `label` (string)
 - `type` (`text` | `textarea` | `select` | `radio` | `label`)
-- `scoring` (number)
+- `is_showing` (boolean)
+- `is_scoring` (boolean)
+- `is_validation` (boolean)
 
 Optional fields:
 
 - `required` (boolean)
 - `placeholder` (string)
 - `helpText` (string)
-- `rows` (number, usually for `textarea`)
-- `maxLength` (number)
 - `options` (array of `{ label, value }`, required for `radio/select`)
-- `scoringOptions` (array of `{ label, score }`)
+- `scoringOptions` (array of `{ label, score }`, required when `is_scoring = true`)
+- `validationRegex` (string RegExp pattern)
+- `validationMessage` (string)
 
-Special behavior:
+Deprecated / not allowed:
 
-- If `type` is `label`, field `label` will be rendered as HTML in page `WawancaraMulaiPage.vue` using `v-html`.
+- `rows` is no longer used in structure.
+- `scoring` (single numeric score) is no longer used for new structure.
+- `maxLength` is no longer used in structure.
 
-## Scoring Modes in Admin UI
+## Label Type Behavior
 
-Each question can use one of two scoring modes:
+- `type: "label"` is read-only (no input).
+- Label HTML is rendered using `v-html`.
+- Renderer supports content in `label` and compatibility fallback from `value`.
+- Label dapat menggunakan scoring (`is_scoring = true`) jika dibutuhkan di sisi assessor.
 
-1. `Skor tunggal`
-- Uses one integer value in `scoring`.
-
-2. `Opsi skor`
-- Uses multiple labeled score options in `scoringOptions`.
-- Format in UI textarea per line: `label|score`
-- Example:
-  - `Best answer|10`
-  - `Good answer|8`
-  - `Bad answer|3`
-
-When `scoringOptions` is used, `scoring` is still saved (set to the highest option score) for compatibility.
-
-## Example Question with Scoring Options
+Example:
 
 ```json
 {
-  "name": "motivasi",
-  "label": "Bagaimana motivasi Anda bergabung?",
+  "name": "judul_1",
+  "type": "label",
+  "label": "<h2>INI H2</h2>",
+  "is_showing": true,
+  "is_scoring": true,
+  "scoringOptions": [
+    { "label": "Poin penuh", "score": 10 },
+    { "label": "Poin sedang", "score": 6 },
+    { "label": "Poin rendah", "score": 3 }
+  ],
+  "is_validation": false
+}
+```
+
+## Visibility Rule (`is_showing`)
+
+- `is_showing = true`: tampil di responden dan assessor.
+- `is_showing = false`: disembunyikan dari responden, tetap tampil di assessor.
+
+## Scoring Rule (Refactored)
+
+- Only one scoring style is used: `scoringOptions` with integer scores.
+- To enable scoring for a question: set `is_scoring` to `true`.
+- If `is_scoring` is `false`, `scoringOptions` should be omitted / empty.
+
+Example:
+
+```json
+{
+  "name": "aktivitas_harian",
+  "label": "Apa saja kegiatan harian Anda?",
   "type": "textarea",
   "required": true,
-  "scoring": 10,
+  "is_showing": true,
+  "is_scoring": true,
   "scoringOptions": [
-    { "label": "Best answer", "score": 10 },
-    { "label": "Good answer", "score": 8 },
-    { "label": "Bad answer", "score": 3 }
+    { "label": "Tidak ada Aktivitas", "score": 10 },
+    { "label": "Aktivitas setengah hari", "score": 6 },
+    { "label": "Aktivitas sampai sore", "score": 3 }
   ]
 }
 ```
 
-## Backend Validation Rules (Current)
+## RegExp Validation Rule
 
-In `AdminKuesionerController@store`:
+For input-based question types (`text` / `textarea`):
+
+- Enable validation by setting `is_validation` to `true`.
+- If `is_validation = true`, `validationRegex` must be provided.
+- Validation runs on `keyup`.
+- If value does not match, error is shown from `validationMessage` (or default message).
+
+Example:
+
+```json
+{
+  "name": "nik",
+  "label": "Masukkan NIK",
+  "type": "text",
+  "required": true,
+  "is_showing": true,
+  "is_scoring": false,
+  "is_validation": true,
+  "validationRegex": "^[0-9]{16}$",
+  "validationMessage": "NIK harus 16 digit angka."
+}
+```
+
+## Backend Validation Summary
+
+In `AdminKuesionerController`:
 
 - `structure` must be valid JSON.
-- `status` otomatis `inactive` saat create (tidak dari input user).
 - Top-level `questions` must be an array.
-- Every question must have numeric `scoring`.
-- If `scoringOptions` exists:
-  - must be a non-empty array
-  - each item must have:
-    - `label` non-empty string
-    - `score` integer
-
-## Update Behavior
-
-- Route update tersedia: `PUT /admin/kuesioner/{kuesioner}`.
-- Update hanya mengubah `structure` (status yang sudah ada dipertahankan).
+- Each question must contain boolean `is_scoring`.
+- Each question must contain boolean `is_showing`.
+- Each question must contain boolean `is_validation`.
+- `rows` is rejected.
+- `maxLength` is rejected.
+- If `is_scoring = true`, `scoringOptions` must exist and each option must have:
+  - `label` non-empty string
+  - `score` integer
+- If `is_scoring = false`, non-empty `scoringOptions` is rejected.
+- If `is_validation = true`, `validationRegex` is required and validated.
+- If `is_validation = false`, validation fields must be empty.
