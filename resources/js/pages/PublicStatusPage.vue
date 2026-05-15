@@ -15,6 +15,7 @@ defineOptions({
 const props = defineProps<{
     mitra: {
         nik: string;
+        kode_akses?: string | null;
         nama_lengkap: string;
         posisi_dilamar: string;
         status_sobat: 'Sudah' | 'Belum';
@@ -32,6 +33,7 @@ const mitraRegistrationUrl = 'https://mitra.bps.go.id';
 const adminWaUrl = 'https://wa.me/6282144406055';
 const isBelumSobat = computed(() => props.mitra.status_sobat === 'Belum');
 const isSudahBelumWawancara = computed(() => props.mitra.status_sobat === 'Sudah' && props.mitra.status_wawancara === 'Belum Wawancara');
+const selectionUrl = computed(() => (props.mitra.kode_akses ? `/seleksi/${props.mitra.kode_akses}` : null));
 const flashSuccess = computed(() => (page.props.flash as { success?: string } | undefined)?.success ?? '');
 const serverUploadError = computed(() => (page.props.errors as Record<string, string> | undefined)?.upload_sobat_file ?? '');
 
@@ -111,7 +113,7 @@ function submitSobatUpload(): void {
                                 @select-sobat-file="onSelectSobatFile"
                                 @submit-sobat-upload="submitSobatUpload"
                             />
-                            <SudahBelumWawancaraStatusView v-else-if="isSudahBelumWawancara" />
+                            <SudahBelumWawancaraStatusView v-else-if="isSudahBelumWawancara" :selection-url="selectionUrl" />
                             <StatusDiprosesView v-else />
                         </div>
 
