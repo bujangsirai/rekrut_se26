@@ -17,18 +17,30 @@ defineProps<{
                     <span>File KTP</span>
                 </Button>
             </a>
+            <Button v-else variant="outline" size="sm" class="h-7 gap-1 text-[11px]" disabled>
+                <FileImage class="h-3.5 w-3.5" />
+                <span>File KTP</span>
+            </Button>
             <a v-if="original.url_spek_hp" :href="`/admin/file/${original.url_spek_hp}`" target="_blank" rel="noopener noreferrer">
                 <Button variant="outline" size="sm" class="h-7 cursor-pointer gap-1 text-[11px]">
                     <FileImage class="h-3.5 w-3.5" />
                     <span>File Spek HP</span>
                 </Button>
             </a>
+            <Button v-else variant="outline" size="sm" class="h-7 gap-1 text-[11px]" disabled>
+                <FileImage class="h-3.5 w-3.5" />
+                <span>File Spek HP</span>
+            </Button>
             <a v-if="original.url_follow_ig" :href="`/admin/file/${original.url_follow_ig}`" target="_blank" rel="noopener noreferrer">
                 <Button variant="outline" size="sm" class="h-7 cursor-pointer gap-1 text-[11px]">
                     <FileImage class="h-3.5 w-3.5" />
                     <span>File Follow IG</span>
                 </Button>
             </a>
+            <Button v-else variant="outline" size="sm" class="h-7 gap-1 text-[11px]" disabled>
+                <FileImage class="h-3.5 w-3.5" />
+                <span>File Follow IG</span>
+            </Button>
             <a
                 v-if="original.url_upload_sobat"
                 :href="`/admin/file/${original.url_upload_sobat}`"

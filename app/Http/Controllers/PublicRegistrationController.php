@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PublicRegistrationOptionalRequest;
 use App\Http\Requests\PublicRegistrationRequest;
 use App\Models\ApplicantProfile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -15,6 +17,29 @@ use Inertia\Response;
 class PublicRegistrationController extends Controller
 {
     public function create(): Response
+    {
+        [$kecamatanOptions, $desaOptions] = $this->registrationLocationOptions();
+
+        return Inertia::render('PublicRegistrationPage', [
+            'kecamatanOptions' => $kecamatanOptions,
+            'desaOptions' => $desaOptions,
+        ]);
+    }
+
+    public function createOptional(): Response
+    {
+        [$kecamatanOptions, $desaOptions] = $this->registrationLocationOptions();
+
+        return Inertia::render('PublicRegistrationOptionalUploadPage', [
+            'kecamatanOptions' => $kecamatanOptions,
+            'desaOptions' => $desaOptions,
+        ]);
+    }
+
+    /**
+     * @return array{0: Collection<int, array{kode_kec: string, nama_kec: string}>, 1: Collection<int, array{kode_kec: string, kode_desa: string, nama_desa: string}>}
+     */
+    private function registrationLocationOptions(): array
     {
         $kecamatanOptions = DB::table('master_kecamatan_desa')
             ->select('kode_kec', 'nama_kec')
@@ -38,10 +63,7 @@ class PublicRegistrationController extends Controller
             ])
             ->values();
 
-        return Inertia::render('PublicRegistrationPage', [
-            'kecamatanOptions' => $kecamatanOptions,
-            'desaOptions' => $desaOptions,
-        ]);
+        return [$kecamatanOptions, $desaOptions];
     }
 
     public function store(PublicRegistrationRequest $request): RedirectResponse
@@ -85,6 +107,70 @@ class PublicRegistrationController extends Controller
                     'updated_at' => now(),
                 ],
             ]);
+        });
+
+        return redirect()
+            ->route('public.register.success')
+            ->with([
+                'success' => true,
+                'nik' => $validated['nik'],
+                'nama_lengkap' => $validated['nama_lengkap'],
+            ]);
+    }
+
+    public function storeOptional(PublicRegistrationOptionalRequest $request): RedirectResponse
+    {
+        $validated = $request->validated();
+        $ktpPath = $request->file('ktp_file')?->store('mitra/ktp', 'local');
+        $spekHpPath = $request->file('spek_hp_file')?->store('mitra/spek_hp', 'local');
+        $followIgPath = $request->file('follow_ig_file')?->store('mitra/follow_ig', 'local');
+
+        unset($validated['ktp_file'], $validated['spek_hp_file'], $validated['follow_ig_file']);
+
+        DB::transaction(function () use ($validated, $ktpPath, $spekHpPath, $followIgPath): void {
+            ApplicantProfile::query()->create([
+                ...$validated,
+                'kode_akses' => Str::uuid()->toString(),
+                'kode_akses_kedaluwarsa_pada' => now()->addMonths(3),
+                'status_wawancara' => 'Belum Wawancara',
+                'status_kelulusan' => 'Belum Lulus',
+            ]);
+
+            $berkasPayload = [];
+
+            if ($ktpPath) {
+                $berkasPayload[] = [
+                    'nik' => $validated['nik'],
+                    'jenis_berkas' => 'ktp',
+                    'file_path' => $ktpPath,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            if ($spekHpPath) {
+                $berkasPayload[] = [
+                    'nik' => $validated['nik'],
+                    'jenis_berkas' => 'spek_hp',
+                    'file_path' => $spekHpPath,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            if ($followIgPath) {
+                $berkasPayload[] = [
+                    'nik' => $validated['nik'],
+                    'jenis_berkas' => 'follow_ig',
+                    'file_path' => $followIgPath,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            if ($berkasPayload !== []) {
+                DB::table('mitra_berkas')->insert($berkasPayload);
+            }
         });
 
         return redirect()

@@ -68,6 +68,8 @@ function statusBadgeClass(label: 'Sudah' | 'Belum'): string {
 }
 
 const statusPillCompactClass = 'px-2';
+const isSobatEditable = false;
+const isMitraKepkaEditable = false;
 
 export const getMitraColumns = (actions: {
     onEdit: (mitra: MitraItem) => void;
@@ -184,7 +186,7 @@ export const getMitraColumns = (actions: {
             const label = row.original.status_sobat === 'Sudah' ? 'Sudah' : 'Belum';
             const isUpdating = actions.isSobatUpdating?.(row.original.id) ?? false;
 
-            if (!actions.onChangeSobat) {
+            if (!isSobatEditable || !actions.onChangeSobat) {
                 return h(Badge, { variant: 'outline', class: `text-[11px] inline-flex ${statusPillCompactClass} ${statusBadgeClass(label)}` }, () => label);
             }
 
@@ -224,7 +226,7 @@ export const getMitraColumns = (actions: {
             const label = row.original.is_mitrakepka ? 'Ya' : 'Tidak';
             const isUpdating = actions.isMitraKepkaUpdating?.(row.original.id) ?? false;
 
-            if (!actions.onChangeMitraKepka) {
+            if (!isMitraKepkaEditable || !actions.onChangeMitraKepka) {
                 return h(Badge, { variant: 'outline', class: `text-[11px] inline-flex ${statusPillCompactClass} ${statusBadgeClass(row.original.is_mitrakepka ? 'Sudah' : 'Belum')}` }, () => label);
             }
 
