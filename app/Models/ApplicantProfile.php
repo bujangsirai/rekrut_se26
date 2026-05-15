@@ -42,6 +42,8 @@ class ApplicantProfile extends Model
         'is_mitrakepka',
         'status_wawancara',
         'status_kelulusan',
+        'jawaban_kuesioner',
+        'skor_kuesioner',
     ];
 
     /**
@@ -58,6 +60,8 @@ class ApplicantProfile extends Model
             'is_not_hamil' => 'boolean',
             'is_motor' => 'boolean',
             'is_mitrakepka' => 'boolean',
+            'jawaban_kuesioner' => 'array',
+            'skor_kuesioner' => 'integer',
         ];
     }
 }

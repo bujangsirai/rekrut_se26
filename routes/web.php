@@ -26,7 +26,6 @@ Route::post('/daftar_yaaa', [PublicRegistrationController::class, 'storeOptional
 
 Route::get('/daftar/sukses', [PublicRegistrationController::class, 'success'])
     ->name('public.register.success');
-
 Route::post('/cek-status', [PublicRegistrationController::class, 'checkStatus'])
     ->name('public.check-status');
 Route::get('/status', [PublicRegistrationController::class, 'showStatus'])
@@ -80,6 +79,8 @@ Route::middleware('auth')->group(function () {
             ->name('admin.mitra.index');
         Route::get('/seleksi_mitra', [AdminMitraController::class, 'seleksiMitra'])
             ->name('admin.mitra.seleksi');
+        Route::get('/penilaian/{kode_akses}', [PublicRegistrationController::class, 'assessorSelection'])
+            ->name('admin.penilaian.show');
         Route::get('/mitra/export', [AdminMitraController::class, 'export'])
             ->name('admin.mitra.export');
         Route::get('/file/{payload}', [AdminMitraController::class, 'file'])

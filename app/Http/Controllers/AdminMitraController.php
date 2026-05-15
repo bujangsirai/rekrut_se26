@@ -110,6 +110,8 @@ class AdminMitraController extends Controller
                 'is_mitrakepka' => (bool) $item->is_mitrakepka,
                 'status_wawancara' => $item->status_wawancara,
                 'status_kelulusan' => $item->status_kelulusan,
+                'jawaban_kuesioner' => $item->jawaban_kuesioner,
+                'skor_kuesioner' => $item->skor_kuesioner,
                 'tanggal_lahir' => Carbon::parse($item->tanggal_lahir)->format('Y-m-d'),
                 'tempat_lahir' => $item->tempat_lahir,
                 'status_perkawinan' => $item->status_perkawinan,

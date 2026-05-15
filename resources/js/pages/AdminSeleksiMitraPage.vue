@@ -6,9 +6,10 @@ import UpdateMitraDialog from '@/components/mitra/UpdateMitraDialog.vue';
 import LayoutAdmin from '@/components/layouts/LayoutAdmin.vue';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
+import type { ColumnDef } from '@tanstack/vue-table';
 import { Head, router } from '@inertiajs/vue3';
-import { Download } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { Download, Pencil } from 'lucide-vue-next';
+import { computed, h, ref } from 'vue';
 import mitraRoute from '@/routes/admin/mitra';
 
 const props = defineProps<{
@@ -31,10 +32,9 @@ defineOptions({
 const isUpdateModalOpen = ref(false);
 const isDeleteModalOpen = ref(false);
 const selectedMitra = ref<MitraItem | null>(null);
-const sobatUpdatingIds = ref<number[]>([]);
 const mitraKepkaUpdatingIds = ref<number[]>([]);
 
-function buildUpdatePayload(item: MitraItem, statusSobat: MitraItem['status_sobat']) {
+function buildUpdatePayload(item: MitraItem) {
     return {
         nik: item.nik,
         nama_lengkap: item.nama_lengkap,
@@ -57,7 +57,7 @@ function buildUpdatePayload(item: MitraItem, statusSobat: MitraItem['status_soba
         merk_hp: item.merk_hp,
         kode_kec_dom: item.kode_kec_dom,
         kode_desa_dom: item.kode_desa_dom,
-        status_sobat: statusSobat,
+        status_sobat: item.status_sobat,
         is_mitrakepka: item.is_mitrakepka,
         status_wawancara: item.status_wawancara,
         status_kelulusan: item.status_kelulusan,
@@ -66,34 +66,13 @@ function buildUpdatePayload(item: MitraItem, statusSobat: MitraItem['status_soba
 
 function buildMitraKepkaUpdatePayload(item: MitraItem, isMitraKepka: boolean) {
     return {
-        ...buildUpdatePayload(item, item.status_sobat),
+        ...buildUpdatePayload(item),
         is_mitrakepka: isMitraKepka,
     };
 }
 
-function isSobatUpdating(mitraId: number): boolean {
-    return sobatUpdatingIds.value.includes(mitraId);
-}
-
 function isMitraKepkaUpdating(mitraId: number): boolean {
     return mitraKepkaUpdatingIds.value.includes(mitraId);
-}
-
-function handleChangeSobat(item: MitraItem, statusSobat: MitraItem['status_sobat']): void {
-    if (item.status_sobat === statusSobat || isSobatUpdating(item.id)) {
-        return;
-    }
-
-    sobatUpdatingIds.value.push(item.id);
-
-    router.put(mitraRoute.update(item.id).url, buildUpdatePayload(item, statusSobat), {
-        preserveScroll: true,
-        preserveState: true,
-        only: ['mitra'],
-        onFinish: () => {
-            sobatUpdatingIds.value = sobatUpdatingIds.value.filter((id) => id !== item.id);
-        },
-    });
 }
 
 function handleChangeMitraKepka(item: MitraItem, isMitraKepka: boolean): void {
@@ -126,10 +105,40 @@ function handleDeleteMitra(item: MitraItem): void {
 const tableColumns = getMitraColumns({
     onEdit: handleEditMitra,
     onDelete: handleDeleteMitra,
-    onChangeSobat: handleChangeSobat,
-    isSobatUpdating,
     onChangeMitraKepka: handleChangeMitraKepka,
     isMitraKepkaUpdating,
+});
+
+const periksaMitraColumn: ColumnDef<MitraItem> = {
+    id: 'periksa_mitra',
+    header: () => h('span', { class: 'text-xs font-semibold' }, 'Penilaian'),
+    cell: ({ row }) =>
+        h(
+            'a',
+            {
+                href: `/admin/penilaian/${row.original.kode_akses}`,
+                target: '_blank',
+                rel: 'noopener noreferrer',
+                class: 'inline-flex items-center text-green-600 transition hover:text-green-700',
+                title: 'Penilaian',
+            },
+            [h(Pencil, { class: 'h-4 w-4' })],
+        ),
+    enableSorting: false,
+    enableColumnFilter: false,
+    meta: { hideOnMobile: true, cellClass: 'min-w-[80px]' },
+};
+
+const tableColumnsWithPeriksaMitra = computed(() => {
+    const columnsWithoutSobat = tableColumns.filter((column) => {
+        return (column as { accessorKey?: string }).accessorKey !== 'status_sobat';
+    });
+    const actionsColumn = columnsWithoutSobat.at(-1);
+    const nonActionsColumns = actionsColumn ? columnsWithoutSobat.slice(0, -1) : columnsWithoutSobat;
+
+    return actionsColumn
+        ? [...nonActionsColumns, periksaMitraColumn, actionsColumn]
+        : [...nonActionsColumns, periksaMitraColumn];
 });
 
 const domisiliKecamatanFilters = computed(() => [
@@ -157,7 +166,7 @@ const domisiliKecamatanFilters = computed(() => [
         <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <DataTable
                 :data="mitra"
-                :columns="tableColumns"
+                :columns="tableColumnsWithPeriksaMitra"
                 search-placeholder="Cari nama atau NIK..."
                 :search-fields="['nama_lengkap', 'nik']"
                 :toolbar-filters="domisiliKecamatanFilters"

@@ -135,7 +135,9 @@ const page = usePage();
                                     Cek Status
                                 </button>
                             </form>
-                            <p class="text-xs font-semibold text-red-700">(mohon menunggu informasi berikutnya)</p>
+                            <p class="text-xs font-semibold text-red-700">
+                                (mohon menunggu informasi berikutnya, wawancara dimulai pada tanggal 16 mei 2026)
+                            </p>
                         </div>
                     </div>
                 </section>

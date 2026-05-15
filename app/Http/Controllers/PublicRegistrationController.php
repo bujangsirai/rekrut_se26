@@ -314,13 +314,7 @@ class PublicRegistrationController extends Controller
 
     public function selection(string $kode_akses): Response|RedirectResponse
     {
-        $mitra = ApplicantProfile::query()
-            ->where('kode_akses', $kode_akses)
-            ->first();
-
-        if (! $mitra) {
-            abort(404, 'Kode akses tidak valid.');
-        }
+        $mitra = $this->findMitraByAccessCode($kode_akses);
 
         if ($mitra->kode_akses_kedaluwarsa_pada && $mitra->kode_akses_kedaluwarsa_pada->isPast()) {
             abort(403, 'Kode akses telah kedaluwarsa.');
@@ -339,6 +333,43 @@ class PublicRegistrationController extends Controller
             ]);
         }
 
+        $formConfig = $this->activeFormConfig();
+
+        return Inertia::render('WawancaraMulaiPage', [
+            'mitra' => $mitra,
+            'formConfig' => $formConfig,
+        ]);
+    }
+
+    public function assessorSelection(string $kode_akses): Response
+    {
+        $mitra = $this->findMitraByAccessCode($kode_akses);
+        $formConfig = $this->activeFormConfig();
+
+        return Inertia::render('WawancaraNilaiPage', [
+            'mitra' => $mitra,
+            'formConfig' => $formConfig,
+        ]);
+    }
+
+    private function findMitraByAccessCode(string $kodeAkses): ApplicantProfile
+    {
+        $mitra = ApplicantProfile::query()
+            ->where('kode_akses', $kodeAkses)
+            ->first();
+
+        if (! $mitra) {
+            abort(404, 'Kode akses tidak valid.');
+        }
+
+        return $mitra;
+    }
+
+    /**
+     * @return array{title: string, description: string, questions: array<int, array<string, mixed>>}
+     */
+    private function activeFormConfig(): array
+    {
         $activeKuesioner = DB::table('mitra_kuesioner')
             ->select(['structure'])
             ->where('status', 'active')
@@ -359,9 +390,6 @@ class PublicRegistrationController extends Controller
             $formConfig['questions'] = [];
         }
 
-        return Inertia::render('WawancaraMulaiPage', [
-            'mitra' => $mitra,
-            'formConfig' => $formConfig,
-        ]);
+        return $formConfig;
     }
 }

@@ -24,6 +24,8 @@ export interface MitraItem {
     is_mitrakepka: boolean;
     status_wawancara: 'Belum Wawancara' | 'Sudah Wawancara';
     status_kelulusan: 'Lulus' | 'Belum Lulus';
+    jawaban_kuesioner: Record<string, unknown> | null;
+    skor_kuesioner: number | null;
     tanggal_lahir: string;
     tempat_lahir: string;
     status_perkawinan: 'Belum Kawin' | 'Kawin' | 'Cerai Hidup' | 'Cerai Mati';
