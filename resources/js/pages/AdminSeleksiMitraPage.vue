@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DeleteMitraDialog from '@/components/mitra/DeleteMitraDialog.vue';
-import { getMitraColumns, type MitraItem } from '@/components/mitra/mitra-columns';
+import { getMitraColumns, type MitraItem } from '@/components/mitra/mitra-seleksi-columns';
 import MitraExpandedRow from '@/components/mitra/MitraExpandedRow.vue';
 import UpdateMitraDialog from '@/components/mitra/UpdateMitraDialog.vue';
 import LayoutAdmin from '@/components/layouts/LayoutAdmin.vue';
