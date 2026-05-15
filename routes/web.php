@@ -14,12 +14,14 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [PublicLandingController::class, 'index'])
     ->name('home');
 // TODO
+Route::get('/daftar_yaaa', [PublicRegistrationController::class, 'create'])
+    ->name('public.register');
 // Route::get('/daftar', [PublicRegistrationController::class, 'create'])
 //     ->name('public.register');
-// Route::post('/daftar', [PublicRegistrationController::class, 'store'])
-//     ->name('public.register.store');
-// Route::get('/daftar/sukses', [PublicRegistrationController::class, 'success'])
-//     ->name('public.register.success');
+Route::post('/daftar', [PublicRegistrationController::class, 'store'])
+    ->name('public.register.store');
+Route::get('/daftar/sukses', [PublicRegistrationController::class, 'success'])
+    ->name('public.register.success');
 
 Route::post('/cek-status', [PublicRegistrationController::class, 'checkStatus'])
     ->name('public.check-status');

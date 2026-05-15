@@ -5,6 +5,7 @@ import { media } from '@/lib/media';
 import BelumSobatStatusView from '@/components/common/public-status/BelumSobatStatusView.vue';
 import BelumSobatStatusNoUploadView from '@/components/common/public-status/BelumSobatStatusNoUploadView.vue';
 import SudahBelumWawancaraStatusView from '@/components/common/public-status/SudahBelumWawancaraStatusView.vue';
+import SudahWawancaraStatusView from '@/components/common/public-status/SudahWawancaraStatusView.vue';
 import StatusDiprosesView from '@/components/common/public-status/StatusDiprosesView.vue';
 
 defineOptions({
@@ -33,6 +34,7 @@ const mitraRegistrationUrl = 'https://mitra.bps.go.id';
 const adminWaUrl = 'https://wa.me/6282144406055';
 const isBelumSobat = computed(() => props.mitra.status_sobat === 'Belum');
 const isSudahBelumWawancara = computed(() => props.mitra.status_sobat === 'Sudah' && props.mitra.status_wawancara === 'Belum Wawancara');
+const isSudahWawancara = computed(() => props.mitra.status_sobat === 'Sudah' && props.mitra.status_wawancara === 'Sudah Wawancara');
 const selectionUrl = computed(() => (props.mitra.kode_akses ? `/seleksi/${props.mitra.kode_akses}` : null));
 const flashSuccess = computed(() => (page.props.flash as { success?: string } | undefined)?.success ?? '');
 const serverUploadError = computed(() => (page.props.errors as Record<string, string> | undefined)?.upload_sobat_file ?? '');
@@ -114,6 +116,7 @@ function submitSobatUpload(): void {
                                 @submit-sobat-upload="submitSobatUpload"
                             />
                             <SudahBelumWawancaraStatusView v-else-if="isSudahBelumWawancara" :selection-url="selectionUrl" />
+                            <SudahWawancaraStatusView v-else-if="isSudahWawancara" />
                             <StatusDiprosesView v-else />
                         </div>
 
