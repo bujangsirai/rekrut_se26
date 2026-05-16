@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, reactive, ref } from 'vue';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 defineOptions({
     // @ts-ignore
@@ -45,6 +47,7 @@ const answers = reactive<Record<string, AnswerValue>>({});
 const answerErrors = reactive<Record<string, string>>({});
 const isSubmitting = ref(false);
 const isSavingDraft = ref(false);
+const isSubmitConfirmDialogOpen = ref(false);
 
 const props = defineProps<{
     mitra: {
@@ -268,6 +271,15 @@ function submitAnswers(): void {
     );
 }
 
+function openSubmitConfirmation(): void {
+    isSubmitConfirmDialogOpen.value = true;
+}
+
+function confirmSubmitAnswers(): void {
+    isSubmitConfirmDialogOpen.value = false;
+    submitAnswers();
+}
+
 function saveDraftAnswers(): void {
     const payloadAnswers: Record<string, AnswerValue> = {};
 
@@ -437,7 +449,7 @@ function saveDraftAnswers(): void {
                             type="button"
                             :disabled="isSubmitting || isSavingDraft"
                             class="inline-flex h-10 items-center justify-center rounded-lg bg-cyan-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-cyan-700"
-                            @click="submitAnswers"
+                            @click="openSubmitConfirmation"
                         >
                             {{ isSubmitting ? 'Mengirim...' : 'Kirim Jawaban' }}
                         </button>
@@ -446,4 +458,17 @@ function saveDraftAnswers(): void {
             </section>
         </div>
     </div>
+
+    <Dialog :open="isSubmitConfirmDialogOpen" @update:open="isSubmitConfirmDialogOpen = $event">
+        <DialogContent class="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Konfirmasi Submit</DialogTitle>
+                <DialogDescription>Apakah kamu yakin ingin men submit? pastikan jawaban benar.</DialogDescription>
+            </DialogHeader>
+            <DialogFooter class="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                <Button variant="outline" @click="isSubmitConfirmDialogOpen = false">Batal</Button>
+                <Button class="bg-cyan-600 text-white hover:bg-cyan-700" @click="confirmSubmitAnswers">Ya, Submit</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
 </template>
