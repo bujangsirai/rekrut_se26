@@ -365,12 +365,13 @@ class PublicRegistrationController extends Controller
         $formConfig = $this->activeFormConfig();
 
         $scoringQuestions = collect($formConfig['questions'] ?? [])
-            ->filter(static function (mixed $question): bool {
+            ->filter(function (mixed $question): bool {
                 if (! is_array($question)) {
                     return false;
                 }
 
-                return ($question['is_scoring'] ?? false) === true
+                return $this->isVisibleForAssessor($question)
+                    && ($question['is_scoring'] ?? false) === true
                     && is_array($question['scoringOptions'] ?? null)
                     && ($question['scoringOptions'] ?? []) !== [];
             })
@@ -467,15 +468,14 @@ class PublicRegistrationController extends Controller
         $formConfig = $this->activeFormConfig();
 
         $respondentQuestions = collect($formConfig['questions'] ?? [])
-            ->filter(static function (mixed $question): bool {
+            ->filter(function (mixed $question): bool {
                 if (! is_array($question)) {
                     return false;
                 }
 
-                $isShowing = ! array_key_exists('is_showing', $question) || $question['is_showing'] !== false;
                 $isLabel = ($question['type'] ?? 'text') === 'label';
 
-                return $isShowing && ! $isLabel;
+                return $this->isVisibleForRespondent($question) && ! $isLabel;
             })
             ->values();
 
@@ -659,15 +659,14 @@ class PublicRegistrationController extends Controller
 
         $formConfig = $this->activeFormConfig();
         $respondentQuestions = collect($formConfig['questions'] ?? [])
-            ->filter(static function (mixed $question): bool {
+            ->filter(function (mixed $question): bool {
                 if (! is_array($question)) {
                     return false;
                 }
 
-                $isShowing = ! array_key_exists('is_showing', $question) || $question['is_showing'] !== false;
                 $isLabel = ($question['type'] ?? 'text') === 'label';
 
-                return $isShowing && ! $isLabel;
+                return $this->isVisibleForRespondent($question) && ! $isLabel;
             })
             ->values();
 
@@ -719,6 +718,34 @@ class PublicRegistrationController extends Controller
         }
 
         return $mitra;
+    }
+
+    /**
+     * @param  array<string, mixed>  $question
+     */
+    private function isVisibleForRespondent(array $question): bool
+    {
+        if (array_key_exists('is_showing_respondent', $question) && is_bool($question['is_showing_respondent'])) {
+            return $question['is_showing_respondent'];
+        }
+
+        if (array_key_exists('is_showing', $question) && is_bool($question['is_showing'])) {
+            return $question['is_showing'];
+        }
+
+        return true;
+    }
+
+    /**
+     * @param  array<string, mixed>  $question
+     */
+    private function isVisibleForAssessor(array $question): bool
+    {
+        if (array_key_exists('is_showing_assessor', $question) && is_bool($question['is_showing_assessor'])) {
+            return $question['is_showing_assessor'];
+        }
+
+        return true;
     }
 
     /**

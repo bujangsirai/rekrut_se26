@@ -17,6 +17,8 @@ interface QuestionConfig {
     label: string;
     value?: string;
     type: 'radio' | 'select' | 'checkbox' | 'textarea' | 'text' | 'label';
+    is_showing_respondent?: boolean;
+    is_showing_assessor?: boolean;
     is_showing?: boolean;
     is_scoring?: boolean;
     is_validation?: boolean;
@@ -96,7 +98,13 @@ for (const question of props.formConfig.questions ?? []) {
 }
 
 const respondentQuestions = computed(() => {
-    return (props.formConfig.questions ?? []).filter((question) => question.is_showing !== false);
+    return (props.formConfig.questions ?? []).filter((question) => {
+        if (typeof question.is_showing_respondent === 'boolean') {
+            return question.is_showing_respondent;
+        }
+
+        return question.is_showing !== false;
+    });
 });
 
 const respondentQuestionNumbers = computed(() => {

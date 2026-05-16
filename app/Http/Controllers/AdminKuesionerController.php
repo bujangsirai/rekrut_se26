@@ -124,8 +124,16 @@ class AdminKuesionerController extends Controller
                 return sprintf('Pertanyaan ke-%d wajib memiliki props "is_scoring" bernilai boolean.', $index + 1);
             }
 
-            if (! array_key_exists('is_showing', $question) || ! is_bool($question['is_showing'])) {
-                return sprintf('Pertanyaan ke-%d wajib memiliki props "is_showing" bernilai boolean.', $index + 1);
+            $hasRespondentVisibility = array_key_exists('is_showing_respondent', $question) && is_bool($question['is_showing_respondent']);
+            $hasAssessorVisibility = array_key_exists('is_showing_assessor', $question) && is_bool($question['is_showing_assessor']);
+            $hasLegacyVisibility = array_key_exists('is_showing', $question) && is_bool($question['is_showing']);
+
+            if (! $hasRespondentVisibility && ! $hasLegacyVisibility) {
+                return sprintf('Pertanyaan ke-%d wajib memiliki props "is_showing_respondent" bernilai boolean.', $index + 1);
+            }
+
+            if (! $hasAssessorVisibility) {
+                return sprintf('Pertanyaan ke-%d wajib memiliki props "is_showing_assessor" bernilai boolean.', $index + 1);
             }
 
             if (! array_key_exists('is_validation', $question) || ! is_bool($question['is_validation'])) {

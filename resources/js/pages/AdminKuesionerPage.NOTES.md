@@ -15,9 +15,9 @@ This note explains the current questionnaire JSON contract used by:
 
 Current rendering behavior:
 
-- Respondent view only renders questions with `is_showing = true`.
-- Assessor view renders all questions, including `is_showing = false`.
-- So `is_showing = false` means hidden from respondent, but still visible to assessor.
+- Respondent view only renders questions with `is_showing_respondent = true`.
+- Assessor view only renders questions with `is_showing_assessor = true`.
+- Legacy compatibility: if old `is_showing` exists, it is treated as respondent visibility.
 
 ## Top-Level JSON
 
@@ -36,7 +36,8 @@ Required fields per question:
 - `name` (string, unique in one form)
 - `label` (string)
 - `type` (`text` | `textarea` | `select` | `radio` | `checkbox` | `label`)
-- `is_showing` (boolean)
+- `is_showing_respondent` (boolean)
+- `is_showing_assessor` (boolean)
 - `is_scoring` (boolean)
 - `is_validation` (boolean)
 
@@ -70,7 +71,8 @@ Example:
   "name": "judul_1",
   "type": "label",
   "label": "<h2>INI H2</h2>",
-  "is_showing": true,
+  "is_showing_respondent": true,
+  "is_showing_assessor": true,
   "is_scoring": true,
   "scoringOptions": [
     { "label": "Poin penuh", "score": 10 },
@@ -81,10 +83,12 @@ Example:
 }
 ```
 
-## Visibility Rule (`is_showing`)
+## Visibility Rule (`is_showing_respondent` & `is_showing_assessor`)
 
-- `is_showing = true`: tampil di responden dan assessor.
-- `is_showing = false`: disembunyikan dari responden, tetap tampil di assessor.
+- `is_showing_respondent = true`: tampil di responden.
+- `is_showing_respondent = false`: disembunyikan dari responden.
+- `is_showing_assessor = true`: tampil di assessor.
+- `is_showing_assessor = false`: disembunyikan dari assessor.
 
 ## Scoring Rule (Refactored)
 
@@ -100,7 +104,8 @@ Example:
   "label": "Apa saja kegiatan harian Anda?",
   "type": "textarea",
   "required": true,
-  "is_showing": true,
+  "is_showing_respondent": true,
+  "is_showing_assessor": true,
   "is_scoring": true,
   "scoringOptions": [
     { "label": "Tidak ada Aktivitas", "score": 10 },
@@ -123,7 +128,8 @@ Example:
   "label": "Hari yang tersedia untuk bertugas",
   "type": "checkbox",
   "required": true,
-  "is_showing": true,
+  "is_showing_respondent": true,
+  "is_showing_assessor": true,
   "is_scoring": false,
   "is_validation": false,
   "options": [
@@ -151,7 +157,8 @@ Example:
   "label": "Masukkan NIK",
   "type": "text",
   "required": true,
-  "is_showing": true,
+  "is_showing_respondent": true,
+  "is_showing_assessor": true,
   "is_scoring": false,
   "is_validation": true,
   "validationRegex": "^[0-9]{16}$",
@@ -166,7 +173,8 @@ In `AdminKuesionerController`:
 - `structure` must be valid JSON.
 - Top-level `questions` must be an array.
 - Each question must contain boolean `is_scoring`.
-- Each question must contain boolean `is_showing`.
+- Each question must contain boolean `is_showing_respondent`.
+- Each question must contain boolean `is_showing_assessor`.
 - Each question must contain boolean `is_validation`.
 - `rows` is rejected.
 - `maxLength` is rejected.

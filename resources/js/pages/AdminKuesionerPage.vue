@@ -24,6 +24,8 @@ interface QuestionStructure {
     label: string;
     value?: string;
     type: QuestionType;
+    is_showing_respondent?: boolean;
+    is_showing_assessor?: boolean;
     is_showing?: boolean;
     is_scoring?: boolean;
     is_validation?: boolean;
@@ -43,7 +45,8 @@ interface BuilderQuestion {
     required: boolean;
     placeholder: string;
     helpText: string;
-    isShowing: boolean;
+    isShowingRespondent: boolean;
+    isShowingAssessor: boolean;
     isScoring: boolean;
     isValidation: boolean;
     optionsText: string;
@@ -111,7 +114,8 @@ function createEmptyQuestion(index: number): BuilderQuestion {
         required: true,
         placeholder: '',
         helpText: '',
-        isShowing: true,
+        isShowingRespondent: true,
+        isShowingAssessor: true,
         isScoring: false,
         isValidation: false,
         optionsText: 'Ya|ya\nTidak|tidak',
@@ -142,6 +146,8 @@ function toBuilderQuestion(question: QuestionStructure, index: number): BuilderQ
     const hasLegacyScoring = typeof (question as { scoring?: unknown }).scoring === 'number';
     const hasLegacyValidationRegex = typeof question.validationRegex === 'string' && question.validationRegex.trim() !== '';
 
+    const legacyShowingRespondent = question.is_showing ?? true;
+
     return {
         name: question.name || `pertanyaan_${index + 1}`,
         label: question.label || question.value || '',
@@ -149,7 +155,8 @@ function toBuilderQuestion(question: QuestionStructure, index: number): BuilderQ
         required: question.required ?? true,
         placeholder: question.placeholder ?? '',
         helpText: question.helpText ?? '',
-        isShowing: question.is_showing ?? true,
+        isShowingRespondent: question.is_showing_respondent ?? legacyShowingRespondent,
+        isShowingAssessor: question.is_showing_assessor ?? true,
         isScoring: question.is_scoring ?? (hasScoringOptions || hasLegacyScoring),
         isValidation: question.is_validation ?? hasLegacyValidationRegex,
         optionsText: formatOptionsText(question.options),
@@ -283,7 +290,8 @@ function buildStructure(validate = false): KuesionerStructure | null {
             label,
             type: source.type,
             required: source.required,
-            is_showing: source.isShowing,
+            is_showing_respondent: source.isShowingRespondent,
+            is_showing_assessor: source.isShowingAssessor,
             is_scoring: source.isScoring,
             is_validation: source.type === 'label' ? false : source.isValidation,
         };
@@ -566,8 +574,13 @@ function saveStructure(): void {
                                 </label>
 
                                 <label class="inline-flex items-center gap-2 md:col-span-2">
-                                    <input v-model="question.isShowing" type="checkbox" class="h-4 w-4 accent-cyan-600" />
-                                    <span class="text-sm text-slate-700">Tampilkan ke responden (jika nonaktif, hanya assessor)</span>
+                                    <input v-model="question.isShowingRespondent" type="checkbox" class="h-4 w-4 accent-cyan-600" />
+                                    <span class="text-sm text-slate-700">Tampilkan ke responden</span>
+                                </label>
+
+                                <label class="inline-flex items-center gap-2 md:col-span-2">
+                                    <input v-model="question.isShowingAssessor" type="checkbox" class="h-4 w-4 accent-cyan-600" />
+                                    <span class="text-sm text-slate-700">Tampilkan ke assessor</span>
                                 </label>
 
                                 <label class="inline-flex items-center gap-2 md:col-span-2">

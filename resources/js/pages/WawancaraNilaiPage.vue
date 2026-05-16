@@ -17,6 +17,8 @@ interface QuestionConfig {
     label: string;
     value?: string;
     type: 'radio' | 'select' | 'checkbox' | 'textarea' | 'text' | 'label';
+    is_showing_respondent?: boolean;
+    is_showing_assessor?: boolean;
     is_showing?: boolean;
     is_scoring?: boolean;
     required?: boolean;
@@ -74,11 +76,21 @@ for (const question of props.formConfig.questions ?? []) {
     assessorNotes[question.name] = existingNoteFromObject;
 }
 
+const assessorQuestions = computed(() => {
+    return (props.formConfig.questions ?? []).filter((question) => {
+        if (typeof question.is_showing_assessor === 'boolean') {
+            return question.is_showing_assessor;
+        }
+
+        return true;
+    });
+});
+
 const questionNumbers = computed(() => {
     const numbers: Record<string, number> = {};
     let current = 0;
 
-    for (const question of props.formConfig.questions ?? []) {
+    for (const question of assessorQuestions.value) {
         if (question.type !== 'label') {
             current += 1;
             numbers[question.name] = current;
@@ -149,7 +161,7 @@ function submitAssessorScore(): void {
     const payloadScores: Record<string, number> = {};
     const payloadNotes: Record<string, string> = {};
 
-    for (const question of props.formConfig.questions ?? []) {
+    for (const question of assessorQuestions.value) {
         if (!question.is_scoring || (question.scoringOptions ?? []).length === 0) {
             continue;
         }
@@ -208,8 +220,8 @@ function submitAssessorScore(): void {
                     <p class="text-lg text-slate-800"><span class="font-semibold">NIK</span>: {{ props.mitra.nik }}</p>
                 </div>
 
-                <div v-if="props.formConfig.questions.length" class="space-y-6">
-                    <div v-for="(question, index) in props.formConfig.questions" :key="question.name" class="space-y-3">
+                <div v-if="assessorQuestions.length" class="space-y-6">
+                    <div v-for="(question, index) in assessorQuestions" :key="question.name" class="space-y-3">
                         <div
                             v-if="question.type === 'label'"
                             class="rounded-md bg-slate-50 px-3 py-2 text-slate-800 [&_a]:text-cyan-700 [&_a]:underline [&_h1]:mb-2 [&_h1]:!text-3xl [&_h1]:!font-bold [&_h1]:!leading-tight [&_h2]:mb-2 [&_h2]:!text-2xl [&_h2]:!font-semibold [&_h2]:!leading-tight [&_h3]:mb-2 [&_h3]:!text-xl [&_h3]:!font-semibold [&_h3]:!leading-tight [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:!text-sm [&_p]:!leading-6 [&_ul]:list-disc [&_ul]:pl-5"
@@ -221,13 +233,42 @@ function submitAssessorScore(): void {
                                 {{ questionNumbers[question.name] }}. {{ question.label }}
                             </p>
 
-                            <div class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                                {{ renderAnswer(question) }}
+                            <div
+                                v-if="question.is_scoring && (question.scoringOptions ?? []).length"
+                                class="grid gap-3 md:grid-cols-[minmax(0,1fr)_300px] md:items-start"
+                            >
+                                <div class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                                    {{ renderAnswer(question) }}
+                                </div>
+
+                                <div class="space-y-2">
+                                    <p class="text-sm font-semibold text-slate-700">Pilih penilaian:</p>
+                                    <label
+                                        v-for="option in question.scoringOptions ?? []"
+                                        :key="`${question.name}-${option.label}-${option.score}`"
+                                        class="flex items-center gap-2 text-sm text-slate-700"
+                                    >
+                                        <input
+                                            v-model.number="assessorScores[question.name]"
+                                            type="radio"
+                                            :name="`score-${question.name}`"
+                                            :value="option.score"
+                                            class="h-4 w-4 accent-red-600"
+                                        />
+                                        <span>{{ option.label }} ({{ option.score }})</span>
+                                    </label>
+                                </div>
                             </div>
 
+                            <div v-else class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                                {{ renderAnswer(question) }}
+                            </div>
                         </template>
 
-                        <div v-if="question.is_scoring && (question.scoringOptions ?? []).length" class="space-y-2">
+                        <div
+                            v-if="question.type === 'label' && question.is_scoring && (question.scoringOptions ?? []).length"
+                            class="space-y-2"
+                        >
                             <p class="text-sm font-semibold text-slate-700">Pilih penilaian:</p>
                             <label
                                 v-for="option in question.scoringOptions ?? []"
@@ -243,16 +284,17 @@ function submitAssessorScore(): void {
                                 />
                                 <span>{{ option.label }} ({{ option.score }})</span>
                             </label>
-                            <div class="space-y-1 pt-1">
-                                <label :for="`note-${question.name}`" class="text-sm font-semibold text-slate-700">Note (opsional)</label>
-                                <input
-                                    :id="`note-${question.name}`"
-                                    v-model="assessorNotes[question.name]"
-                                    type="text"
-                                    class="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none focus:border-cyan-500"
-                                    placeholder="Tambahkan catatan untuk pertanyaan ini"
-                                />
-                            </div>
+                        </div>
+
+                        <div v-if="question.is_scoring && (question.scoringOptions ?? []).length" class="space-y-1">
+                            <label :for="`note-${question.name}`" class="text-sm font-semibold text-slate-700">Note (opsional)</label>
+                            <input
+                                :id="`note-${question.name}`"
+                                v-model="assessorNotes[question.name]"
+                                type="text"
+                                class="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none focus:border-cyan-500"
+                                placeholder="Tambahkan catatan untuk pertanyaan ini"
+                            />
                         </div>
 
                         <div v-else-if="question.is_scoring" class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
