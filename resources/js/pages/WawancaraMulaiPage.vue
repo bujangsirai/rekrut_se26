@@ -320,7 +320,7 @@ function saveDraftAnswers(): void {
 <template>
     <Head title="Form Wawancara SE2026 KSB" />
 
-    <div class="min-h-screen bg-linear-to-b from-cyan-50 via-slate-100 to-slate-200 px-2 py-3 sm:px-6 sm:py-6">
+    <div class="min-h-screen bg-linear-to-b from-cyan-50 via-slate-100 to-slate-200 px-2 py-3 sm:px-6 sm:py-6 mb-12">
         <div class="mx-auto max-w-5xl space-y-4">
             <header class="rounded-xl border border-cyan-200 bg-white px-4 py-3 shadow-sm">
                 <div class="flex items-center justify-between gap-3">
