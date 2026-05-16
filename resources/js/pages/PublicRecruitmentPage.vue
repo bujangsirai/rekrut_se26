@@ -132,14 +132,14 @@ const page = usePage();
                                 <button
                                     type="submit"
                                     class="h-11 cursor-pointer rounded-xl bg-green-600 px-5 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60 sm:h-11 sm:shrink-0 sm:rounded-lg sm:text-base"
-                                    disabled
+
                                 >
                                     Cek Status
                                 </button>
                             </form>
-                            <p class="text-xs font-semibold text-red-700">
+                            <!-- <p class="text-xs font-semibold text-red-700">
                                 (mohon menunggu informasi berikutnya, wawancara dimulai pada tanggal 16 mei 2026)
-                            </p>
+                            </p> -->
                         </div>
                     </div>
                 </section>
