@@ -5,7 +5,10 @@
             Sudah Wawancara
         </span>
         <p class="mt-2 text-sm leading-relaxed text-slate-600">
-            Terima kasih sudah melakukan wawancara, apabila anda merasa bukan anda yang melakukan wawancara, silahkan hubungi WA Admin.
+            Terima kasih sudah melakukan wawancara, apabila anda merasa bukan anda yang melakukan wawancara, silahkan hubungi WA Admin. JIKA ANDA
+            MITRA BARU, JANGAN LUPA UNTUK MELAKUKAN TES KOMPETENSI DI
+            <a href="https://mitra.bps.go.id" target="_blank" class="font-semibold text-cyan-600 underline hover:text-cyan-700">mitra.bps.go.id</a>
+            JIKA BELUM
         </p>
     </div>
 </template>
