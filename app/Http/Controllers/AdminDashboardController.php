@@ -22,6 +22,9 @@ class AdminDashboardController extends Controller
         $totalSobatSudah = ApplicantProfile::query()
             ->where('status_sobat', 'Sudah')
             ->count();
+        $totalWawancaraSudah = ApplicantProfile::query()
+            ->where('status_wawancara', 'Sudah Wawancara')
+            ->count();
 
         $mitraCounts = ApplicantProfile::query()
             ->selectRaw("
@@ -30,7 +33,8 @@ class AdminDashboardController extends Controller
                 COUNT(*) as total_pendaftar,
                 SUM(CASE WHEN is_mitrakepka = 1 THEN 1 ELSE 0 END) as total_mitra_kepka,
                 SUM(CASE WHEN status_kelulusan = 'Lulus' THEN 1 ELSE 0 END) as total_mitra_lulus,
-                SUM(CASE WHEN status_sobat = 'Sudah' THEN 1 ELSE 0 END) as total_sobat_sudah
+                SUM(CASE WHEN status_sobat = 'Sudah' THEN 1 ELSE 0 END) as total_sobat_sudah,
+                SUM(CASE WHEN status_wawancara = 'Sudah Wawancara' THEN 1 ELSE 0 END) as total_wawancara_sudah
             ")
             ->whereNotNull('kode_kec_dom')
             ->whereNotNull('kode_desa_dom')
@@ -45,7 +49,8 @@ class AdminDashboardController extends Controller
                 COALESCE(mc.total_pendaftar, 0) as total_pendaftar,
                 COALESCE(mc.total_mitra_kepka, 0) as total_mitra_kepka,
                 COALESCE(mc.total_mitra_lulus, 0) as total_mitra_lulus,
-                COALESCE(mc.total_sobat_sudah, 0) as total_sobat_sudah
+                COALESCE(mc.total_sobat_sudah, 0) as total_sobat_sudah,
+                COALESCE(mc.total_wawancara_sudah, 0) as total_wawancara_sudah
             ')
             ->leftJoinSub($mitraCounts, 'mc', function ($join) {
                 $join->on('mkd.kode_kec', '=', 'mc.kode_kec_dom')
@@ -67,6 +72,7 @@ class AdminDashboardController extends Controller
                     'total_mitra_kepka' => (int) $rows->sum('total_mitra_kepka'),
                     'total_mitra_lulus' => (int) $rows->sum('total_mitra_lulus'),
                     'total_sobat_sudah' => (int) $rows->sum('total_sobat_sudah'),
+                    'total_wawancara_sudah' => (int) $rows->sum('total_wawancara_sudah'),
                     'desa' => $rows
                         ->map(static fn (object $row): array => [
                             'kode_desa_dom' => $row->kode_desa_dom,
@@ -75,6 +81,7 @@ class AdminDashboardController extends Controller
                             'total_mitra_kepka' => (int) $row->total_mitra_kepka,
                             'total_mitra_lulus' => (int) $row->total_mitra_lulus,
                             'total_sobat_sudah' => (int) $row->total_sobat_sudah,
+                            'total_wawancara_sudah' => (int) $row->total_wawancara_sudah,
                         ])
                         ->values()
                         ->all(),
@@ -93,6 +100,7 @@ class AdminDashboardController extends Controller
                 'total_mitra_kepka' => $totalMitraKepka,
                 'total_mitra_lulus' => $totalMitraLulus,
                 'total_sobat_sudah' => $totalSobatSudah,
+                'total_wawancara_sudah' => $totalWawancaraSudah,
                 'domisili_summary' => $domisiliSummary,
             ],
         ]);
