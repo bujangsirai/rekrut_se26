@@ -92,11 +92,11 @@ defineOptions({
                         class="rounded-xl border border-slate-200 bg-white px-4 shadow-sm"
                     >
                         <AccordionTrigger class="py-3 hover:no-underline">
-                            <div class="flex w-full items-center justify-between gap-3">
-                                <h3 class="text-xs font-semibold text-slate-900 sm:text-sm">
+                            <div class="flex min-w-0 flex-1 flex-col items-start gap-2 pr-2">
+                                <h3 class="text-xs font-semibold leading-none text-slate-900 sm:text-sm">
                                     {{ kecamatan.nama_kec_dom ?? '-' }}
                                 </h3>
-                                <div class="flex flex-wrap items-center gap-2">
+                                <div class="flex w-full flex-wrap items-center gap-1.5">
                                     <span class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] font-semibold text-slate-700">
                                         {{ kecamatan.total_pendaftar }} pendaftar
                                     </span>
